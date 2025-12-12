@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de Fortaleza Financiera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    />
+    <style>
+        :root {
+            color-scheme: dark;
+            background: #050609;
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            color: #f4f6fb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle at top, rgba(79, 99, 255, 0.3), transparent 35%),
+                linear-gradient(180deg, #04050a, #070a11 55%, #050609 100%);
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(380px, 1fr) minmax(0, 2fr);
+            gap: 32px;
+            margin-top: 32px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(10, 14, 24, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(5, 6, 9, 0.6);
+            backdrop-filter: blur(18px);
+        }
+
+        .visualizer {
+            grid-column: 2 / 3;
+            display: grid;
+            gap: 24px;
+        }
+
+        .visualizer .chart-wrap {
+            min-height: 420px;
+        }
+
+        .hero {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 3vw, 3.2rem);
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 720px;
+            color: rgba(244, 246, 251, 0.75);
+            font-size: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .control {
+            display: grid;
+            gap: 8px;
+        }
+
+        .control label {
+            font-size: 0.95rem;
+            color: rgba(244, 246, 251, 0.8);
+        }
+
+        .control input[type='range'] {
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #5f81ff, #9c6bff);
+            outline: none;
+        }
+
+        .control input[type='range']::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        }
+
+        .control input[type='number'] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            background: rgba(8, 12, 20, 0.9);
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .control .input-row {
+            display: grid;
+            grid-template-columns: 1fr minmax(120px, 180px);
+            gap: 14px;
+            align-items: center;
+        }
+
+        .control .value {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: rgba(244, 246, 251, 0.9);
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 460px !important;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        .stat span {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .visualizer {
+                grid-column: auto;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .panel {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="panel hero">
+            <div>
+                <p>Simula tu futuro financiero paso a paso</p>
+                <h1>Simulador de Crecimiento Financiero 📈</h1>
+            </div>
+            <p>
+                Proyecta tu futuro financiero con escenarios realistas y visualiza el poder del interés compuesto.
+                Compara escenarios, simula gastos y descubre cuándo alcanzarás tus metas.
+            </p>
+        </section>
+
+        <section style="margin-bottom: 32px;">
+            <details style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 16px; backdrop-filter: blur(10px);">
+                <summary style="color: #d8e1ff; font-size: 1.05em; font-weight: 600; cursor: pointer; user-select: none; list-style: none;">
+                    💡 ¿Qué es el interés compuesto, la regla del 4% y cómo funciona esta herramienta? (click para expandir)
+                </summary>
+                <div style="margin-top: 16px; color: #a0aac7; line-height: 1.7; font-size: 0.95em;">
+                    <h3 style="color: #6c8bff; margin-bottom: 8px;">💰 El Interés Compuesto</h3>
+                    <p style="margin-bottom: 12px;">
+                        El interés compuesto es cuando tu dinero genera ganancias, y esas ganancias también generan más ganancias. 
+                        Es como una bola de nieve que crece mientras rueda: mientras más tiempo pasa, más grande se hace.
+                    </p>
+                    <p style="margin-bottom: 16px;">
+                        <strong style="color: #6cff8b;">Ejemplo simple:</strong> Si tienes $1,000 con 10% anual, al año tendrás $1,100. El segundo año, ese 10% se calcula sobre $1,100 (no sobre $1,000), 
+                        entonces ganarás $110. Año tras año, ese efecto se multiplica exponencialmente.
+                    </p>
+                    
+                    <h3 style="color: #ffa500; margin-bottom: 8px; margin-top: 16px;">🏠 La Regla del 4%</h3>
+                    <p style="margin-bottom: 12px;">
+                        La <strong>regla del 4%</strong> es una guía utilizada en planificación financiera que sugiere que puedes retirar el 4% de tu portafolio 
+                        de inversiones cada año (o 0.33% mensual) sin riesgo de agotar tu capital durante tu jubilación.
+                    </p>
+                    <p style="margin-bottom: 12px;">
+                        <strong style="color: #6cff8b;">Ejemplo práctico:</strong> Si acumulas $1,000,000, la regla del 4% sugiere que podrías retirar $40,000 al año 
+                        ($3,333 al mes) de forma sostenible. Esto significa que tu dinero seguiría generando rendimientos que compensan tus retiros.
+                    </p>
+                    <p style="margin-bottom: 16px; padding: 12px; background: rgba(255, 165, 0, 0.15); border-radius: 8px; border-left: 3px solid #ffa500;">
+                        <strong>⚠️ Importante:</strong> Esta regla asume un portafolio diversificado con rendimientos históricos del 7-10% anual. 
+                        Es una guía general, no una garantía. Factores como inflación, volatilidad del mercado y tus gastos reales pueden afectarla.
+                    </p>
+                    
+                    <h3 style="color: #ff6e95; margin-bottom: 8px; margin-top: 16px;">🛠️ Esta herramienta te permite:</h3>
+                    <ul style="margin-left: 20px; margin-bottom: 12px; line-height: 1.8;">
+                        <li>📊 Comparar dos escenarios: uno <strong>pesimista</strong> (conservador) y uno <strong>optimista</strong></li>
+                        <li>💰 Simular <strong>aportes mensuales</strong> que pueden crecer con el tiempo</li>
+                        <li>🚫 Pausar aportes en años específicos (ej: pagas otra deuda, estudios, etc.)</li>
+                        <li>🎯 Establecer una <strong>meta de ahorro</strong> y ver cuándo la alcanzarías</li>
+                        <li>⚠️ Simular <strong>gastos grandes</strong> (auto, casa, emergencias) y ver cómo afectan tu plan</li>
+                        <li>📅 Ver tu <strong>edad en cada punto</strong> del camino y calcular tu renta mensual futura según la regla del 4%</li>
+                    </ul>
+                    <p style="margin-bottom: 0; padding: 12px; background: rgba(108, 139, 255, 0.15); border-radius: 8px; border-left: 3px solid #6c8bff;">
+                        <strong>💡 Tip Pro:</strong> Juega con los valores para ver cómo pequeños cambios en el rendimiento o en tus aportes mensuales 
+                        pueden generar diferencias <em>enormes</em> en el largo plazo. ¡Ese es el verdadero poder del tiempo y la constancia!
+                    </p>
+                </div>
+            </details>
+        </section>
+
+        <div class="main-grid">
+            <section class="panel controls-panel">
+                <div class="controls">
+                <div class="control">
+                    <div class="value">
+                        <label for="initialInvestment">Capital inicial</label>
+                        <span id="initialInvestmentLabel"></span>
+                    </div>
+                    <div class="input-row">
+                        <input id="initialInvestment" type="range" min="0" max="250000" step="1000" value="15000" />
+                        <input id="initialInvestmentNumber" type="number" min="0" max="250000" step="1000" value="15000" />
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="annualPercentagePessimistic">Rendimiento anual pesimista (%)</label>
+                        <span id="annualPercentagePessimisticLabel"></span>
+                    </div>
+                    <div class="input-row">
+                        <input id="annualPercentagePessimistic" type="range" min="1" max="30" step="0.1" value="6" />
+                        <input id="annualPercentagePessimisticNumber" type="number" min="1" max="30" step="0.1" value="6" />
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="annualPercentageOptimistic">Rendimiento anual optimista (%)</label>
+                        <span id="annualPercentageOptimisticLabel"></span>
+                    </div>
+                    <div class="input-row">
+                        <input id="annualPercentageOptimistic" type="range" min="1" max="30" step="0.1" value="12" />
+                        <input id="annualPercentageOptimisticNumber" type="number" min="1" max="30" step="0.1" value="12" />
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="yearsSimulation">Años de simulación</label>
+                        <span id="yearsSimulationLabel"></span>
+                    </div>
+                    <div class="input-row">
+                        <input id="yearsSimulation" type="range" min="1" max="60" step="1" value="15" />
+                        <input id="yearsSimulationNumber" type="number" min="1" max="60" step="1" value="15" />
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="initialAge">Edad actual</label>
+                        <span id="initialAgeLabel"></span>
+                    </div>
+                    <input id="initialAge" type="number" min="18" max="80" step="1" value="34" />
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="monthlyAddOnsStart">Aporte mensual inicial</label>
+                        <span id="monthlyAddOnsStartLabel"></span>
+                    </div>
+                    <input id="monthlyAddOnsStart" type="number" min="0" step="50" value="500" />
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="monthlyAddOnsEnd">Aporte mensual final</label>
+                        <span id="monthlyAddOnsEndLabel"></span>
+                    </div>
+                    <input id="monthlyAddOnsEnd" type="number" min="0" step="50" value="500" />
+                </div>
+
+                <div class="control">
+                    <div class="value">
+                        <label for="goalAmount">Objetivo de monto total</label>
+                        <span id="goalAmountLabel"></span>
+                    </div>
+                    <input id="goalAmount" type="number" min="0" step="1000" value="125000" />
+                </div>
+
+                <div style="margin-top: 24px; padding: 16px; background: rgba(108, 139, 255, 0.08); border-radius: 12px; border: 1px solid rgba(108, 139, 255, 0.2);">
+                    <h3 style="color: #6c8bff; font-size: 1em; margin-bottom: 8px; font-weight: 600;">🚫 Años sin Aportes</h3>
+                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px; line-height: 1.5;">
+                        Define años donde pausas tus aportes mensuales (ej: pagas otra deuda, estudios, etc.).
+                    </p>
+                    <div id="pauseYearsList" style="margin-bottom: 12px; max-height: 150px; overflow-y: auto;"></div>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end;">
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año</label>
+                            <input id="pauseYear" type="number" min="1" max="60" value="2" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <button id="addPauseYearBtn" 
+                                style="padding: 8px 16px; background: #6c8bff; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
+                            + Agregar
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; padding: 16px; background: rgba(255, 165, 0, 0.08); border-radius: 12px; border: 1px solid rgba(255, 165, 0, 0.2);">
+                    <h3 style="color: #ffa500; font-size: 1em; margin-bottom: 8px; font-weight: 600;">⚠️ Eventos Especiales (Gastos/Retiros)</h3>
+                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px; line-height: 1.5;">
+                        Simula gastos grandes como auto, entrada de casa, viajes, etc. Se aplican a ambos escenarios.
+                    </p>
+                    <div id="eventsList" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end;">
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año</label>
+                            <input id="eventYear" type="number" min="1" max="60" value="5" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Monto ($)</label>
+                            <input id="eventAmount" type="number" min="0" step="1000" value="20000" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <button id="addEventBtn" 
+                                style="padding: 8px 16px; background: #ffa500; color: #0a0e27; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
+                            + Agregar
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 20px; background: rgba(108, 255, 139, 0.08); border-radius: 12px; border: 1px solid rgba(108, 255, 139, 0.2);">
+                    <h3 style="color: #6cff8b; font-size: 1em; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        💰 Aportes Extraordinarios
+                    </h3>
+                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px;">Simula ingresos especiales como venta de auto, venta de inmueble, herencias, bonos, etc.</p>
+                    <div id="extraordinaryContributionsList" style="margin-bottom: 12px;"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end;">
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año</label>
+                            <input id="contributionYear" type="number" min="1" max="60" value="5" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Monto ($)</label>
+                            <input id="contributionAmount" type="number" min="0" step="1000" value="30000" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <button id="addContributionBtn" 
+                                style="padding: 8px 16px; background: #6cff8b; color: #0a0e27; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
+                            + Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel visualizer">
+            <div id="invalidWarning" style="display: none; margin-bottom: 16px; padding: 16px; background: rgba(255, 59, 48, 0.15); border: 2px solid #ff3b30; border-radius: 12px; backdrop-filter: blur(10px);">
+                <h3 style="color: #ff3b30; font-size: 1em; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.3em;">⚠️</span> SIMULACIÓN INVÁLIDA
+                </h3>
+                <p style="color: #ffb3b0; font-size: 0.9em; line-height: 1.6; margin: 0;">
+                    Uno o más retiros programados exceden el balance disponible en ese momento. 
+                    Por favor ajusta los montos de tus eventos especiales o el año en que ocurren para que la simulación sea válida.
+                </p>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="growthChart"></canvas>
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <p class="stat-label">Total Aportado</p>
+                    <p class="stat-value" id="totalContributions">$0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Escenario Pesimista</p>
+                    <p class="stat-value" id="pessimisticBalance" style="color: #ff6e95;">$0</p>
+                    <p class="stat-sublabel" id="pessimisticGain" style="font-size: 0.85em; color: #d8e1ff;"></p>
+                    <p class="stat-sublabel" id="pessimisticGoal" style="font-size: 0.85em; color: #ffa500; margin-top: 4px;"></p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Escenario Optimista</p>
+                    <p class="stat-value" id="optimisticBalance" style="color: #6cff8b;">$0</p>
+                    <p class="stat-sublabel" id="optimisticGain" style="font-size: 0.85em; color: #d8e1ff;"></p>
+                    <p class="stat-sublabel" id="optimisticGoal" style="font-size: 0.85em; color: #ffa500; margin-top: 4px;"></p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; backdrop-filter: blur(10px);">
+                <h3 style="color: #d8e1ff; font-size: 1.1em; margin-bottom: 12px; font-weight: 600;">📊 Regla del 4% - Renta Mensual Sostenible</h3>
+                <p style="color: #a0aac7; font-size: 0.9em; line-height: 1.6; margin-bottom: 16px;">
+                    La regla del 4% sugiere que puedes retirar el 4% anual de tu portafolio de forma segura. 
+                    Esto equivale a una renta mensual sin agotar tu capital:
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="padding: 12px; background: rgba(255, 110, 149, 0.1); border-radius: 8px; border-left: 3px solid #ff6e95;">
+                        <p style="color: #ff6e95; font-size: 0.85em; margin-bottom: 4px;">Pesimista</p>
+                        <p style="color: #d8e1ff; font-size: 1.3em; font-weight: 600;" id="pessimisticRent">$0</p>
+                        <p style="color: #a0aac7; font-size: 0.8em;">por mes</p>
+                    </div>
+                    <div style="padding: 12px; background: rgba(108, 255, 139, 0.1); border-radius: 8px; border-left: 3px solid #6cff8b;">
+                        <p style="color: #6cff8b; font-size: 0.85em; margin-bottom: 4px;">Optimista</p>
+                        <p style="color: #d8e1ff; font-size: 1.3em; font-weight: 600;" id="optimisticRent">$0</p>
+                        <p style="color: #a0aac7; font-size: 0.8em;">por mes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="invalidWarning" style="display: none; margin-top: 16px; padding: 16px; background: rgba(255, 59, 48, 0.15); border: 2px solid #ff3b30; border-radius: 12px; backdrop-filter: blur(10px);">
+                <h3 style="color: #ff3b30; font-size: 1em; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.3em;">⚠️</span> SIMULACIÓN INVÁLIDA
+                </h3>
+                <p style="color: #ffb3b0; font-size: 0.9em; line-height: 1.6; margin: 0;">
+                    Uno o más retiros programados exceden el balance disponible en ese momento. 
+                    Por favor ajusta los montos de tus eventos especiales o el año en que ocurren para que la simulación sea válida.
+                </p>
+            </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const STORAGE_KEY = 'fin-simulator-settings';
+        const defaults = {
+            initialInvestment: 15000,
+            annualPercentagePessimistic: 6,
+            annualPercentageOptimistic: 10,
+            yearsSimulation: 20,
+            initialAge: 30,
+            monthlyAddOnsStart: 500,
+            monthlyAddOnsEnd: 1000,
+            goalAmount: 500000,
+            events: [],
+            pauseYears: [],
+            extraordinaryContributions: [],
+        };
+
+        const loadSettings = () => {
+            try {
+                const payload = localStorage.getItem(STORAGE_KEY);
+                return payload ? JSON.parse(payload) : {};
+            } catch (error) {
+                console.warn('Failed to parse stored settings', error);
+                return {};
+            }
+        };
+
+        const savedSettings = loadSettings();
+        const initialSettings = { ...defaults, ...savedSettings };
+
+        const formatCurrency = (value) =>
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+        const formatShortThreshold = (value) => {
+            if (value >= 1000000) return `$${value / 1000000}M`;
+            return `$${value / 1000}k`;
+        };
+
+        const inputs = {
+            initialInvestment: document.getElementById('initialInvestment'),
+            annualPercentagePessimistic: document.getElementById('annualPercentagePessimistic'),
+            annualPercentageOptimistic: document.getElementById('annualPercentageOptimistic'),
+            yearsSimulation: document.getElementById('yearsSimulation'),
+            monthlyAddOnsStart: document.getElementById('monthlyAddOnsStart'),
+            monthlyAddOnsEnd: document.getElementById('monthlyAddOnsEnd'),
+            initialAge: document.getElementById('initialAge'),
+            goalAmount: document.getElementById('goalAmount'),
+        };
+
+        const labels = {
+            initialInvestment: document.getElementById('initialInvestmentLabel'),
+            annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticLabel'),
+            annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticLabel'),
+            yearsSimulation: document.getElementById('yearsSimulationLabel'),
+            monthlyAddOnsStart: document.getElementById('monthlyAddOnsStartLabel'),
+            monthlyAddOnsEnd: document.getElementById('monthlyAddOnsEndLabel'),
+            initialAge: document.getElementById('initialAgeLabel'),
+            goalAmount: document.getElementById('goalAmountLabel'),
+        };
+
+        const numberInputs = {
+            yearsSimulation: document.getElementById('yearsSimulationNumber'),
+        };
+        
+        const freeInputs = {
+            initialInvestment: document.getElementById('initialInvestmentNumber'),
+            annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticNumber'),
+            annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticNumber'),
+        };
+
+        const stats = {
+            pessimisticBalance: document.getElementById('pessimisticBalance'),
+            optimisticBalance: document.getElementById('optimisticBalance'),
+            totalContributions: document.getElementById('totalContributions'),
+            pessimisticGain: document.getElementById('pessimisticGain'),
+            optimisticGain: document.getElementById('optimisticGain'),
+            pessimisticGoal: document.getElementById('pessimisticGoal'),
+            optimisticGoal: document.getElementById('optimisticGoal'),
+            pessimisticRent: document.getElementById('pessimisticRent'),
+            optimisticRent: document.getElementById('optimisticRent'),
+        };
+
+        let latestSimulation = { data: [] };
+        const thresholdTargets = [100000, 250000, 500000, 1000000, 5000000, 10000000, 20000000, 50000000];
+        let thresholdMarkers = [];
+        let discreteEvents = initialSettings.events || [];
+        let pauseYears = initialSettings.pauseYears || [];
+        let extraordinaryContributions = initialSettings.extraordinaryContributions || [];
+
+        const milestonePlugin = {
+            id: 'milestoneLines',
+            afterDatasetsDraw(chart) {
+                if (!thresholdMarkers.length) return;
+                const ctx = chart.ctx;
+                const yScale = chart.scales.y;
+                const meta = chart.getDatasetMeta(0);
+                ctx.save();
+                thresholdMarkers.forEach((marker) => {
+                    const point = meta.data[marker.index];
+                    if (!point) return;
+                    ctx.strokeStyle = 'rgba(255, 110, 149, 0.7)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, yScale.top);
+                    ctx.lineTo(point.x, yScale.bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#ff6e95';
+                    ctx.font = '12px Space Grotesk, system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(marker.label, point.x, yScale.top + 16);
+                });
+                ctx.restore();
+            },
+        };
+
+        const goalLinePlugin = {
+            id: 'goalLine',
+            afterDatasetsDraw(chart) {
+                const { ctx, chartArea, scales } = chart;
+                if (!inputs || !inputs.goalAmount) return;
+                const goalAmount = Number(inputs.goalAmount.value);
+                if (!goalAmount || goalAmount <= 0) return;
+
+                const y = scales.y.getPixelForValue(goalAmount);
+                if (y < chartArea.top || y > chartArea.bottom) return;
+
+                ctx.save();
+                ctx.strokeStyle = '#ffa500';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.moveTo(chartArea.left, y);
+                ctx.lineTo(chartArea.right, y);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffa500';
+                ctx.font = 'bold 11px Space Grotesk';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Meta: ${formatCurrency(goalAmount)}`, chartArea.right - 8, y - 6);
+                ctx.restore();
+            },
+        };
+
+        Chart.register(milestonePlugin, goalLinePlugin);
+
+        const ctx = document.getElementById('growthChart');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Escenario pesimista',
+                        data: [],
+                        borderWidth: 3,
+                        borderColor: '#ff6e95',
+                        backgroundColor: 'rgba(255, 110, 149, 0.1)',
+                        tension: 0.35,
+                        fill: false,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Escenario optimista',
+                        data: [],
+                        borderWidth: 3,
+                        borderColor: '#6cff8b',
+                        backgroundColor: 'rgba(108, 255, 139, 0.1)',
+                        tension: 0.35,
+                        fill: false,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Total aportado',
+                        data: [],
+                        borderWidth: 2,
+                        borderColor: 'rgba(255, 184, 108, 0.8)',
+                        backgroundColor: 'rgba(255, 184, 108, 0.15)',
+                        tension: 0.35,
+                        pointRadius: 0,
+                        borderDash: [6, 4],
+                        fill: false,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (context) => {
+                                if (!context.length || !window.pessimisticSimData) return '';
+                                const row = window.pessimisticSimData[context[0].dataIndex];
+                                return row ? row.tooltipLabel : context[0].label;
+                            },
+                            label(context) {
+                                const value = context.parsed.y;
+                                if (!window.pessimisticSimData) return formatCurrency(value);
+                                
+                                const dataPoint = window.pessimisticSimData[context.dataIndex];
+                                const age = dataPoint ? Math.floor(dataPoint.ageValue) : '';
+                                
+                                if (context.datasetIndex === 2) {
+                                    const monthly = dataPoint ? dataPoint.monthlyContribution : 0;
+                                    return [
+                                        `${context.dataset.label}: ${formatCurrency(value)}`,
+                                        `Aporte mensual: ${formatCurrency(monthly)}`
+                                    ];
+                                }
+                                
+                                const lines = [`${context.dataset.label}: ${formatCurrency(value)} (${age} años)`];
+                                
+                                // Add event info if present
+                                if (dataPoint && dataPoint.hasEvent) {
+                                    lines.push(`⚠️ Retiro: ${formatCurrency(dataPoint.eventAmount)}`);
+                                    if (dataPoint.invalidWithdrawal) {
+                                        lines.push('❌ RETIRO EXCEDE BALANCE DISPONIBLE');
+                                    }
+                                }
+                                
+                                // Add extraordinary contribution if present
+                                if (dataPoint && dataPoint.hasContribution) {
+                                    lines.push(`💰 Aporte extra: ${formatCurrency(dataPoint.contributionAmount)}`);
+                                }
+                                
+                                return lines;
+                            },
+                        },
+                    },
+                    legend: { display: false },
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#d8e1ff',
+                            font: { family: 'Space Grotesk', size: 11 },
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: false,
+                            callback(value, index) {
+                                const label = this.chart.data.labels[index];
+                                return label || '';
+                            },
+                        },
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#d8e1ff',
+                            callback: (value) => formatCurrency(value),
+                            font: { family: 'Space Grotesk' },
+                        },
+                    },
+                },
+                onClick: (event, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const index = activeElements[0].index;
+                        const dataPoint = latestSimulation.data[index];
+                        const pessimisticValue = chart.data.datasets[0].data[index];
+                        const optimisticValue = chart.data.datasets[1].data[index];
+                        const contributionValue = chart.data.datasets[2].data[index];
+                        const age = Math.floor(dataPoint.ageValue);
+                        const year = Math.floor(dataPoint.month / 12);
+                        const monthly = dataPoint.monthlyContribution;
+
+                        alert(
+                            `📊 Información del Año ${year} (${age} años)\n\n` +
+                            `💰 Escenario Pesimista: ${formatCurrency(pessimisticValue)}\n` +
+                            `💰 Escenario Optimista: ${formatCurrency(optimisticValue)}\n` +
+                            `📈 Total Aportado: ${formatCurrency(contributionValue)}\n` +
+                            `📅 Aporte Mensual: ${formatCurrency(monthly)}`
+                        );
+                    }
+                },
+            },
+        });
+
+        const formatDecimalLabel = (value) => {
+            const formatted = Number(value).toFixed(1);
+            return formatted.endsWith('.0') ? formatted.replace('.0', '') : formatted;
+        };
+
+        const applySettings = (state) => {
+            inputs.initialInvestment.value = state.initialInvestment;
+            freeInputs.initialInvestment.value = state.initialInvestment;
+            inputs.annualPercentagePessimistic.value = state.annualPercentagePessimistic;
+            freeInputs.annualPercentagePessimistic.value = state.annualPercentagePessimistic;
+            inputs.annualPercentageOptimistic.value = state.annualPercentageOptimistic;
+            freeInputs.annualPercentageOptimistic.value = state.annualPercentageOptimistic;
+            inputs.yearsSimulation.value = state.yearsSimulation;
+            numberInputs.yearsSimulation.value = state.yearsSimulation;
+            inputs.monthlyAddOnsStart.value = state.monthlyAddOnsStart;
+            inputs.monthlyAddOnsEnd.value = state.monthlyAddOnsEnd;
+            inputs.initialAge.value = state.initialAge;
+            inputs.goalAmount.value = state.goalAmount;
+        };
+
+        applySettings(initialSettings);
+
+        const simulate = ({
+            initialInvestment,
+            annualPercentage,
+            yearsSimulation,
+            monthlyAddOnsStart,
+            monthlyAddOnsEnd,
+            initialAge,
+            events = [],
+            pauseYears = [],
+            extraordinaryContributions = [],
+        }) => {
+            const months = yearsSimulation * 12;
+            const monthlyRate = annualPercentage / 100 / 12;
+            let balance = initialInvestment;
+            const data = [];
+            const contributionLine = [];
+            let cumulativeContributions = initialInvestment;
+            const contributionDelta = monthlyAddOnsEnd - monthlyAddOnsStart;
+            let hasInvalidWithdrawal = false;
+
+            // Convert events to month-based map (apply at START of year, not end)
+            const eventsByMonth = {};
+            events.forEach(event => {
+                const eventMonth = (event.year - 1) * 12; // Year 1 = month 0, Year 2 = month 12, etc.
+                if (eventMonth >= 0 && eventMonth <= months) {
+                    eventsByMonth[eventMonth] = (eventsByMonth[eventMonth] || 0) + event.amount;
+                }
+            });
+            
+            // Convert extraordinary contributions to month-based map (apply at START of year, not end)
+            const contributionsByMonth = {};
+            extraordinaryContributions.forEach(contrib => {
+                const contribMonth = (contrib.year - 1) * 12; // Year 1 = month 0, Year 2 = month 12, etc.
+                if (contribMonth >= 0 && contribMonth <= months) {
+                    contributionsByMonth[contribMonth] = (contributionsByMonth[contribMonth] || 0) + contrib.amount;
+                }
+            });
+
+            // Create set of paused years for quick lookup
+            const pausedYearsSet = new Set(pauseYears);
+
+            for (let month = 0; month <= months; month += 1) {
+                const yearValue = month / 12;
+                const flooredYear = Math.floor(yearValue);
+                const yearLabel = month % 12 === 0 ?
+                    `${flooredYear}a · ${Math.floor(initialAge + flooredYear)}a` :
+                    '';
+                const ageValue = initialAge + month / 12;
+                const ageLabel = formatDecimalLabel(ageValue);
+                const progress = months ? month / months : 1;
+                
+                // Check if this year has paused contributions
+                const isPaused = pausedYearsSet.has(flooredYear + 1); // Check against user-facing year number
+                const monthlyAddOns = isPaused ? 0 : monthlyAddOnsStart + contributionDelta * progress;
+                
+                // Apply discrete event withdrawal if exists (BEFORE recording balance)
+                let invalidWithdrawal = false;
+                if (eventsByMonth[month]) {
+                    const withdrawalAmount = eventsByMonth[month];
+                    if (withdrawalAmount > balance) {
+                        hasInvalidWithdrawal = true;
+                        invalidWithdrawal = true;
+                    }
+                    balance = Math.max(0, balance - withdrawalAmount);
+                }
+                
+                // Apply extraordinary contribution if exists (BEFORE recording balance)
+                if (contributionsByMonth[month]) {
+                    balance += contributionsByMonth[month];
+                    cumulativeContributions += contributionsByMonth[month];
+                }
+                
+                data.push({
+                    yearLabel,
+                    month,
+                    tooltipLabel: `${formatDecimalLabel(yearValue)}a · ${ageLabel} años`,
+                    balance,
+                    ageValue,
+                    ageLabel,
+                    monthlyContribution: Math.round(monthlyAddOns),
+                    hasEvent: !!eventsByMonth[month],
+                    eventAmount: eventsByMonth[month] || 0,
+                    invalidWithdrawal,
+                    hasContribution: !!contributionsByMonth[month],
+                    contributionAmount: contributionsByMonth[month] || 0,
+                });
+                contributionLine.push(cumulativeContributions);
+
+                if (month === months) break;
+                // Apply compound interest and monthly contribution for NEXT month
+                balance *= 1 + monthlyRate;
+                balance += monthlyAddOns;
+                cumulativeContributions += monthlyAddOns;
+            }
+
+            const finalBalance = Math.round(balance);
+            const totalContributions = cumulativeContributions;
+            const totalInterest = finalBalance - totalContributions;
+
+            return { data, contributionLine, finalBalance, totalContributions, totalInterest, hasInvalidWithdrawal };
+        };
+
+        const updateLabels = () => {
+            labels.initialInvestment.textContent = `$${Number(freeInputs.initialInvestment.value).toLocaleString('en-US')}`;
+            labels.annualPercentagePessimistic.textContent = `${parseFloat(freeInputs.annualPercentagePessimistic.value).toFixed(1)} %`;
+            labels.annualPercentageOptimistic.textContent = `${parseFloat(freeInputs.annualPercentageOptimistic.value).toFixed(1)} %`;
+            labels.yearsSimulation.textContent = `${inputs.yearsSimulation.value} años`;
+            labels.monthlyAddOnsStart.textContent = formatCurrency(Number(inputs.monthlyAddOnsStart.value));
+            labels.monthlyAddOnsEnd.textContent = formatCurrency(Number(inputs.monthlyAddOnsEnd.value));
+            labels.initialAge.textContent = `${inputs.initialAge.value} años`;
+            labels.goalAmount.textContent = formatCurrency(Number(inputs.goalAmount.value));
+        };
+
+        const syncNumberFields = () => {
+            Object.entries(numberInputs).forEach(([key, field]) => {
+                field.value = inputs[key].value;
+            });
+        };
+
+        const updateThresholdMarkers = (data) => {
+            thresholdMarkers = thresholdTargets
+                .map((value) => {
+                    const index = data.findIndex((row) => row.balance >= value);
+                    if (index === -1) return null;
+                    return { value, index, label: formatShortThreshold(value) };
+                })
+                .filter(Boolean);
+        };
+
+        const updateView = () => {
+            const pessimisticSim = simulate({
+                initialInvestment: Number(freeInputs.initialInvestment.value),
+                annualPercentage: Number(freeInputs.annualPercentagePessimistic.value),
+                yearsSimulation: Number(inputs.yearsSimulation.value),
+                monthlyAddOnsStart: Number(inputs.monthlyAddOnsStart.value),
+                monthlyAddOnsEnd: Number(inputs.monthlyAddOnsEnd.value),
+                initialAge: Number(inputs.initialAge.value),
+                events: discreteEvents,
+                pauseYears: pauseYears,
+                extraordinaryContributions: extraordinaryContributions,
+            });
+
+            const optimisticSim = simulate({
+                initialInvestment: Number(freeInputs.initialInvestment.value),
+                annualPercentage: Number(freeInputs.annualPercentageOptimistic.value),
+                yearsSimulation: Number(inputs.yearsSimulation.value),
+                monthlyAddOnsStart: Number(inputs.monthlyAddOnsStart.value),
+                monthlyAddOnsEnd: Number(inputs.monthlyAddOnsEnd.value),
+                initialAge: Number(inputs.initialAge.value),
+                events: discreteEvents,
+                pauseYears: pauseYears,
+                extraordinaryContributions: extraordinaryContributions,
+            });
+
+            latestSimulation = optimisticSim;
+            window.pessimisticSimData = pessimisticSim.data;
+            window.optimisticSimData = optimisticSim.data;
+            
+            chart.data.labels = pessimisticSim.data.map((row) => row.yearLabel);
+            chart.data.datasets[0].data = pessimisticSim.data.map((row) => row.balance);
+            chart.data.datasets[1].data = optimisticSim.data.map((row) => row.balance);
+            chart.data.datasets[2].data = pessimisticSim.contributionLine;
+
+            updateThresholdMarkers(optimisticSim.data);
+            chart.update('none');
+            
+            // Show/hide invalid withdrawal warning
+            const invalidWarning = document.getElementById('invalidWarning');
+            if (pessimisticSim.hasInvalidWithdrawal || optimisticSim.hasInvalidWithdrawal) {
+                invalidWarning.style.display = 'block';
+            } else {
+                invalidWarning.style.display = 'none';
+            }
+
+            const pessimisticDiff = pessimisticSim.finalBalance - pessimisticSim.totalContributions;
+            const pessimisticPercent = ((pessimisticDiff / pessimisticSim.totalContributions) * 100).toFixed(1);
+            const optimisticDiff = optimisticSim.finalBalance - optimisticSim.totalContributions;
+            const optimisticPercent = ((optimisticDiff / optimisticSim.totalContributions) * 100).toFixed(1);
+
+            stats.pessimisticBalance.textContent = formatCurrency(pessimisticSim.finalBalance);
+            stats.pessimisticGain.textContent = `+${formatCurrency(pessimisticDiff)} (+${pessimisticPercent}%)`;
+            stats.optimisticBalance.textContent = formatCurrency(optimisticSim.finalBalance);
+            stats.optimisticGain.textContent = `+${formatCurrency(optimisticDiff)} (+${optimisticPercent}%)`;
+            stats.totalContributions.textContent = formatCurrency(pessimisticSim.totalContributions);
+            
+            // Calculate years to goal and age at goal
+            const goalAmount = Number(inputs.goalAmount.value);
+            const initialAge = Number(inputs.initialAge.value);
+            
+            const pessimisticGoalIndex = pessimisticSim.data.findIndex(row => row.balance >= goalAmount);
+            if (pessimisticGoalIndex !== -1) {
+                const yearsToGoal = Math.floor(pessimisticSim.data[pessimisticGoalIndex].month / 12);
+                const ageAtGoal = Math.floor(initialAge + yearsToGoal);
+                stats.pessimisticGoal.textContent = `🎯 Objetivo en ${yearsToGoal} años (${ageAtGoal} años de edad)`;
+            } else {
+                stats.pessimisticGoal.textContent = '🎯 Objetivo no alcanzado en este período';
+            }
+            
+            const optimisticGoalIndex = optimisticSim.data.findIndex(row => row.balance >= goalAmount);
+            if (optimisticGoalIndex !== -1) {
+                const yearsToGoal = Math.floor(optimisticSim.data[optimisticGoalIndex].month / 12);
+                const ageAtGoal = Math.floor(initialAge + yearsToGoal);
+                stats.optimisticGoal.textContent = `🎯 Objetivo en ${yearsToGoal} años (${ageAtGoal} años de edad)`;
+            } else {
+                stats.optimisticGoal.textContent = '🎯 Objetivo no alcanzado en este período';
+            }
+            
+            // Calculate 4% rule monthly rent
+            const pessimisticMonthlyRent = (pessimisticSim.finalBalance * 0.04) / 12;
+            const optimisticMonthlyRent = (optimisticSim.finalBalance * 0.04) / 12;
+            stats.pessimisticRent.textContent = formatCurrency(pessimisticMonthlyRent);
+            stats.optimisticRent.textContent = formatCurrency(optimisticMonthlyRent);
+        };
+
+        const clampValue = (value, min, max) => Math.min(max, Math.max(min, value));
+        const alignToStep = (value, step) => {
+            if (!step) return value;
+            const numericStep = Number(step);
+            if (!Number.isFinite(numericStep) || numericStep === 0) return value;
+            return Math.round(value / numericStep) * numericStep;
+        };
+
+        const persistSettings = () => {
+            const payload = {
+                initialInvestment: Number(freeInputs.initialInvestment.value),
+                annualPercentagePessimistic: Number(freeInputs.annualPercentagePessimistic.value),
+                annualPercentageOptimistic: Number(freeInputs.annualPercentageOptimistic.value),
+                yearsSimulation: Number(inputs.yearsSimulation.value),
+                initialAge: Number(inputs.initialAge.value),
+                monthlyAddOnsStart: Number(inputs.monthlyAddOnsStart.value),
+                monthlyAddOnsEnd: Number(inputs.monthlyAddOnsEnd.value),
+                goalAmount: Number(inputs.goalAmount.value),
+                events: discreteEvents,
+                pauseYears: pauseYears,
+                extraordinaryContributions: extraordinaryContributions,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        };
+
+        const handleInput = () => {
+            updateLabels();
+            updateView();
+            syncNumberFields();
+            persistSettings();
+        };
+
+        Object.entries(numberInputs).forEach(([key, numberField]) => {
+            const rangeField = inputs[key];
+            rangeField.addEventListener('input', () => {
+                numberField.value = rangeField.value;
+            });
+            numberField.addEventListener('input', () => {
+                const min = Number(rangeField.min);
+                const max = Number(rangeField.max);
+                const current = Number(numberField.value);
+                if (!Number.isFinite(current)) return;
+                const clamped = clampValue(current, min, max);
+                const aligned = alignToStep(clamped, rangeField.step);
+                const finalValue = clampValue(aligned, min, max);
+                rangeField.value = finalValue;
+                numberField.value = finalValue;
+                handleInput();
+            });
+        });
+
+        Object.entries(freeInputs).forEach(([key, numberField]) => {
+            const rangeField = inputs[key];
+            rangeField.addEventListener('input', () => {
+                numberField.value = rangeField.value;
+            });
+            numberField.addEventListener('input', () => {
+                const current = Number(numberField.value);
+                if (!Number.isFinite(current)) return;
+                rangeField.value = current;
+                handleInput();
+            });
+        });
+
+        Object.values(inputs).forEach((input) => input.addEventListener('input', handleInput));
+
+        // Pause years management
+        const renderPauseYears = () => {
+            const pauseYearsList = document.getElementById('pauseYearsList');
+            if (pauseYears.length === 0) {
+                pauseYearsList.innerHTML = '<p style="color: #6a7185; font-size: 0.85em; font-style: italic;">Sin años pausados</p>';
+                return;
+            }
+            
+            pauseYears.sort((a, b) => a - b);
+            pauseYearsList.innerHTML = pauseYears.map((year, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #6c8bff;">
+                    <span style="color: #d8e1ff; font-weight: 600;">Año ${year}</span>
+                    <button onclick="removePauseYear(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                </div>
+            `).join('');
+        };
+
+        window.removePauseYear = (index) => {
+            pauseYears.splice(index, 1);
+            renderPauseYears();
+            persistSettings();
+            updateView();
+        };
+
+        document.getElementById('addPauseYearBtn').addEventListener('click', () => {
+            const year = Number(document.getElementById('pauseYear').value);
+            
+            if (year <= 0) {
+                alert('Por favor ingresa un año válido (mayor a 0)');
+                return;
+            }
+            
+            if (pauseYears.includes(year)) {
+                alert('Este año ya está en la lista');
+                return;
+            }
+            
+            pauseYears.push(year);
+            renderPauseYears();
+            persistSettings();
+            updateView();
+        });
+
+        // Event management
+        const renderEvents = () => {
+            const eventsList = document.getElementById('eventsList');
+            if (discreteEvents.length === 0) {
+                eventsList.innerHTML = '<p style="color: #6a7185; font-size: 0.85em; font-style: italic;">Sin eventos agregados</p>';
+                return;
+            }
+            
+            discreteEvents.sort((a, b) => a.year - b.year);
+            eventsList.innerHTML = discreteEvents.map((event, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #ffa500;">
+                    <div>
+                        <span style="color: #d8e1ff; font-weight: 600;">Año ${event.year}</span>
+                        <span style="color: #a0aac7; margin-left: 12px;">${formatCurrency(event.amount)}</span>
+                    </div>
+                    <button onclick="removeEvent(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                </div>
+            `).join('');
+        };
+
+        window.removeEvent = (index) => {
+            discreteEvents.splice(index, 1);
+            renderEvents();
+            persistSettings();
+            updateView();
+        };
+
+        document.getElementById('addEventBtn').addEventListener('click', () => {
+            const year = Number(document.getElementById('eventYear').value);
+            const amount = Number(document.getElementById('eventAmount').value);
+            
+            if (year <= 0 || amount <= 0) {
+                alert('Por favor ingresa valores válidos (año > 0 y monto > 0)');
+                return;
+            }
+            
+            discreteEvents.push({ year, amount });
+            renderEvents();
+            persistSettings();
+            updateView();
+        });
+
+        // Extraordinary contributions management
+        const renderExtraordinaryContributions = () => {
+            const contributionsList = document.getElementById('extraordinaryContributionsList');
+            if (extraordinaryContributions.length === 0) {
+                contributionsList.innerHTML = '<p style="color: #6a7185; font-size: 0.85em; font-style: italic;">Sin aportes extraordinarios agregados</p>';
+                return;
+            }
+            
+            extraordinaryContributions.sort((a, b) => a.year - b.year);
+            contributionsList.innerHTML = extraordinaryContributions.map((contrib, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #6cff8b;">
+                    <span style="color: #d8e1ff;"><strong>Año ${contrib.year}:</strong> ${formatCurrency(contrib.amount)}</span>
+                    <button onclick="removeExtraordinaryContribution(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                </div>
+            `).join('');
+        };
+
+        window.removeExtraordinaryContribution = (index) => {
+            extraordinaryContributions.splice(index, 1);
+            renderExtraordinaryContributions();
+            persistSettings();
+            updateView();
+        };
+
+        document.getElementById('addContributionBtn').addEventListener('click', () => {
+            const year = Number(document.getElementById('contributionYear').value);
+            const amount = Number(document.getElementById('contributionAmount').value);
+            
+            if (year <= 0 || amount <= 0) {
+                alert('Por favor ingresa valores válidos (año > 0 y monto > 0)');
+                return;
+            }
+            
+            extraordinaryContributions.push({ year, amount });
+            renderExtraordinaryContributions();
+            persistSettings();
+            updateView();
+        });
+
+        renderPauseYears();
+        renderEvents();
+        renderExtraordinaryContributions();
+        handleInput();
+    </script>
+</body>
+</html>
