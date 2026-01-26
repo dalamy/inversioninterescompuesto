@@ -33,22 +33,17 @@
         }
 
         main {
-            max-width: 1600px;
+            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
             padding: 48px 24px;
         }
 
         .main-grid {
             display: grid;
-            grid-template-columns: minmax(380px, 1fr) minmax(0, 2fr);
+            grid-template-columns: 1fr;
             gap: 32px;
             margin-top: 32px;
-        }
-
-        @media (max-width: 1100px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
         .panel {
@@ -61,9 +56,8 @@
         }
 
         .visualizer {
-            grid-column: 2 / 3;
             display: grid;
-            gap: 24px;
+            gap: 12px;
         }
 
         .visualizer .chart-wrap {
@@ -261,7 +255,7 @@
 
         <div class="main-grid">
             <section class="panel controls-panel">
-                <div class="controls">
+                <div class="controls" id="mainControls">
                 <div class="control">
                     <div class="value">
                         <label for="initialInvestment">Capital inicial</label>
@@ -314,40 +308,74 @@
                     <input id="initialAge" type="number" min="18" max="80" step="1" value="34" />
                 </div>
 
-                <div class="control">
-                    <div class="value">
-                        <label for="monthlyAddOnsStart">Aporte mensual inicial</label>
-                        <span id="monthlyAddOnsStartLabel"></span>
+                <div style="margin-top: 24px; padding: 16px; background: rgba(156, 107, 255, 0.08); border-radius: 12px; border: 1px solid rgba(156, 107, 255, 0.2);">
+                    <h3 style="color: #9c6bff; font-size: 1em; margin-bottom: 8px; font-weight: 600;">💸 Aportes Mensuales por Periodos</h3>
+                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px; line-height: 1.5;">
+                        Define cuánto aportarás mensualmente en diferentes periodos de tiempo.
+                    </p>
+                    <div id="monthlyContributionPeriodsList" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end;">
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año inicio</label>
+                            <input id="periodStartYear" type="number" min="0" max="60" value="0" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año fin</label>
+                            <input id="periodEndYear" type="number" min="0" max="60" value="5" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Monto mensual ($)</label>
+                            <input id="periodAmount" type="number" min="0" step="50" value="500" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <button id="addPeriodBtn" 
+                                style="padding: 8px 16px; background: #9c6bff; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
+                            + Agregar
+                        </button>
                     </div>
-                    <input id="monthlyAddOnsStart" type="number" min="0" step="50" value="500" />
                 </div>
 
-                <div class="control">
-                    <div class="value">
-                        <label for="monthlyAddOnsEnd">Aporte mensual final</label>
-                        <span id="monthlyAddOnsEndLabel"></span>
+                <div style="margin-top: 24px; padding: 16px; background: rgba(255, 165, 0, 0.08); border-radius: 12px; border: 1px solid rgba(255, 165, 0, 0.2);">
+                    <h3 style="color: #ffa500; font-size: 1em; margin-bottom: 8px; font-weight: 600;">🎯 Objetivos</h3>
+                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px; line-height: 1.5;">
+                        Define múltiples objetivos de ahorro con nombres personalizados.
+                    </p>
+                    <div id="goalsList" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; align-items: end;">
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Nombre del objetivo</label>
+                            <input id="goalName" type="text" placeholder="Ej: Casa propia, Retiro, etc." value="" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Monto ($)</label>
+                            <input id="goalAmount" type="number" min="0" step="1000" value="125000" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <button id="addGoalBtn" 
+                                style="padding: 8px 16px; background: #ffa500; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
+                            + Agregar
+                        </button>
                     </div>
-                    <input id="monthlyAddOnsEnd" type="number" min="0" step="50" value="500" />
-                </div>
-
-                <div class="control">
-                    <div class="value">
-                        <label for="goalAmount">Objetivo de monto total</label>
-                        <span id="goalAmountLabel"></span>
-                    </div>
-                    <input id="goalAmount" type="number" min="0" step="1000" value="125000" />
                 </div>
 
                 <div style="margin-top: 24px; padding: 16px; background: rgba(108, 139, 255, 0.08); border-radius: 12px; border: 1px solid rgba(108, 139, 255, 0.2);">
                     <h3 style="color: #6c8bff; font-size: 1em; margin-bottom: 8px; font-weight: 600;">🚫 Años sin Aportes</h3>
                     <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px; line-height: 1.5;">
-                        Define años donde pausas tus aportes mensuales (ej: pagas otra deuda, estudios, etc.).
+                        Define años o rangos de años donde pausas tus aportes mensuales.
                     </p>
                     <div id="pauseYearsList" style="margin-bottom: 12px; max-height: 150px; overflow-y: auto;"></div>
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end;">
                         <div>
-                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año</label>
-                            <input id="pauseYear" type="number" min="1" max="60" value="2" 
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año inicio</label>
+                            <input id="pauseYearStart" type="number" min="1" max="60" value="2" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año fin (opcional)</label>
+                            <input id="pauseYearEnd" type="number" min="1" max="60" placeholder="Dejar vacío para 1 año" 
                                    style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
                         </div>
                         <button id="addPauseYearBtn" 
@@ -357,16 +385,21 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 24px; padding: 16px; background: rgba(255, 165, 0, 0.08); border-radius: 12px; border: 1px solid rgba(255, 165, 0, 0.2);">
-                    <h3 style="color: #ffa500; font-size: 1em; margin-bottom: 8px; font-weight: 600;">⚠️ Eventos Especiales (Gastos/Retiros)</h3>
+                <div style="margin-top: 24px; padding: 16px; background: rgba(255, 110, 149, 0.08); border-radius: 12px; border: 1px solid rgba(255, 110, 149, 0.2);">
+                    <h3 style="color: #ff6e95; font-size: 1em; margin-bottom: 8px; font-weight: 600;">⚠️ Eventos Especiales (Gastos/Retiros)</h3>
                     <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px; line-height: 1.5;">
-                        Simula gastos grandes como auto, entrada de casa, viajes, etc. Se aplican a ambos escenarios.
+                        Simula gastos grandes o retiros. Puedes especificar un año o un rango de años.
                     </p>
                     <div id="eventsList" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end;">
                         <div>
-                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año</label>
-                            <input id="eventYear" type="number" min="1" max="60" value="5" 
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año inicio</label>
+                            <input id="eventYearStart" type="number" min="1" max="60" value="5" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año fin (opcional)</label>
+                            <input id="eventYearEnd" type="number" min="1" max="60" placeholder="Dejar vacío para 1 año" 
                                    style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
                         </div>
                         <div>
@@ -375,7 +408,7 @@
                                    style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
                         </div>
                         <button id="addEventBtn" 
-                                style="padding: 8px 16px; background: #ffa500; color: #0a0e27; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
+                                style="padding: 8px 16px; background: #ff6e95; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s;">
                             + Agregar
                         </button>
                     </div>
@@ -385,12 +418,19 @@
                     <h3 style="color: #6cff8b; font-size: 1em; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                         💰 Aportes Extraordinarios
                     </h3>
-                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px;">Simula ingresos especiales como venta de auto, venta de inmueble, herencias, bonos, etc.</p>
+                    <p style="color: #a0aac7; font-size: 0.85em; margin-bottom: 12px;">
+                        Simula ingresos especiales. Puedes especificar un año puntual o un rango de años.
+                    </p>
                     <div id="extraordinaryContributionsList" style="margin-bottom: 12px;"></div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end;">
                         <div>
-                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año</label>
-                            <input id="contributionYear" type="number" min="1" max="60" value="5" 
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año inicio</label>
+                            <input id="contributionYearStart" type="number" min="1" max="60" value="5" 
+                                   style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
+                        </div>
+                        <div>
+                            <label style="color: #d8e1ff; font-size: 0.85em; display: block; margin-bottom: 4px;">Año fin (opcional)</label>
+                            <input id="contributionYearEnd" type="number" min="1" max="60" placeholder="Dejar vacío para 1 año" 
                                    style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #d8e1ff; font-size: 0.9em;" />
                         </div>
                         <div>
@@ -407,6 +447,72 @@
             </div>
         </section>
 
+        <style>
+            .collapsible-section {
+                margin-bottom: 20px;
+                background: rgba(10, 14, 24, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+            .collapsible-header {
+                cursor: pointer;
+                user-select: none;
+                padding: 16px 20px;
+                background: rgba(255, 255, 255, 0.03);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.3s;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .collapsible-header:hover {
+                background: rgba(255, 255, 255, 0.06);
+            }
+            .collapsible-header h3 {
+                margin: 0;
+                font-size: 1.05em;
+                color: #d8e1ff;
+                font-weight: 600;
+            }
+            .collapsible-arrow {
+                font-size: 0.9em;
+                transition: transform 0.3s;
+                color: #6c8bff;
+            }
+            .collapsible-arrow.open {
+                transform: rotate(180deg);
+            }
+            .collapsible-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out;
+            }
+            .collapsible-content.open {
+                max-height: 2000px;
+                transition: max-height 0.5s ease-in;
+            }
+            .collapsible-inner {
+                padding: 20px;
+            }
+            .edit-btn {
+                background: rgba(108, 139, 255, 0.2);
+                color: #6c8bff;
+                border: none;
+                padding: 4px 8px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.85em;
+                font-weight: 600;
+                margin-right: 6px;
+                transition: all 0.2s;
+            }
+            .edit-btn:hover {
+                background: rgba(108, 139, 255, 0.3);
+            }
+        </style>
+
         <section class="panel visualizer">
             <div id="invalidWarning" style="display: none; margin-bottom: 16px; padding: 16px; background: rgba(255, 59, 48, 0.15); border: 2px solid #ff3b30; border-radius: 12px; backdrop-filter: blur(10px);">
                 <h3 style="color: #ff3b30; font-size: 1em; margin-bottom: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
@@ -420,7 +526,8 @@
             <div class="chart-wrap">
                 <canvas id="growthChart"></canvas>
             </div>
-            <div class="stats">
+            
+            <div class="stats" id="statsCards">
                 <div class="stat-card">
                     <p class="stat-label">Total Aportado</p>
                     <p class="stat-value" id="totalContributions">$0</p>
@@ -439,7 +546,11 @@
                 </div>
             </div>
             
-            <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; backdrop-filter: blur(10px);">
+            <div id="statsDescription" style="margin-top: 12px; padding: 16px; background: rgba(108, 139, 255, 0.08); border-radius: 12px; border-left: 3px solid #6c8bff;">
+                <p style="color: #d8e1ff; font-size: 0.9em; line-height: 1.7; margin: 0;"></p>
+            </div>
+            
+            <div style="margin-top: 12px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; backdrop-filter: blur(10px);">
                 <h3 style="color: #d8e1ff; font-size: 1.1em; margin-bottom: 12px; font-weight: 600;">📊 Regla del 4% - Renta Mensual Sostenible</h3>
                 <p style="color: #a0aac7; font-size: 0.9em; line-height: 1.6; margin-bottom: 16px;">
                     La regla del 4% sugiere que puedes retirar el 4% anual de tu portafolio de forma segura. 
@@ -479,9 +590,8 @@
             annualPercentageOptimistic: 10,
             yearsSimulation: 20,
             initialAge: 30,
-            monthlyAddOnsStart: 500,
-            monthlyAddOnsEnd: 1000,
-            goalAmount: 500000,
+            monthlyContributionPeriods: [{ startYear: 0, endYear: 20, amount: 500 }],
+            goals: [{ name: 'Objetivo principal', amount: 500000 }],
             events: [],
             pauseYears: [],
             extraordinaryContributions: [],
@@ -512,10 +622,7 @@
             annualPercentagePessimistic: document.getElementById('annualPercentagePessimistic'),
             annualPercentageOptimistic: document.getElementById('annualPercentageOptimistic'),
             yearsSimulation: document.getElementById('yearsSimulation'),
-            monthlyAddOnsStart: document.getElementById('monthlyAddOnsStart'),
-            monthlyAddOnsEnd: document.getElementById('monthlyAddOnsEnd'),
             initialAge: document.getElementById('initialAge'),
-            goalAmount: document.getElementById('goalAmount'),
         };
 
         const labels = {
@@ -523,10 +630,7 @@
             annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticLabel'),
             annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticLabel'),
             yearsSimulation: document.getElementById('yearsSimulationLabel'),
-            monthlyAddOnsStart: document.getElementById('monthlyAddOnsStartLabel'),
-            monthlyAddOnsEnd: document.getElementById('monthlyAddOnsEndLabel'),
             initialAge: document.getElementById('initialAgeLabel'),
-            goalAmount: document.getElementById('goalAmountLabel'),
         };
 
         const numberInputs = {
@@ -557,6 +661,8 @@
         let discreteEvents = initialSettings.events || [];
         let pauseYears = initialSettings.pauseYears || [];
         let extraordinaryContributions = initialSettings.extraordinaryContributions || [];
+        let monthlyContributionPeriods = initialSettings.monthlyContributionPeriods || [{ startYear: 0, endYear: 20, amount: 500 }];
+        let goals = initialSettings.goals || [{ name: 'Objetivo principal', amount: 500000 }];
 
         const milestonePlugin = {
             id: 'milestoneLines',
@@ -590,27 +696,34 @@
             id: 'goalLine',
             afterDatasetsDraw(chart) {
                 const { ctx, chartArea, scales } = chart;
-                if (!inputs || !inputs.goalAmount) return;
-                const goalAmount = Number(inputs.goalAmount.value);
-                if (!goalAmount || goalAmount <= 0) return;
+                if (!goals || goals.length === 0) return;
 
-                const y = scales.y.getPixelForValue(goalAmount);
-                if (y < chartArea.top || y > chartArea.bottom) return;
+                const colors = ['#ffa500', '#ff6e95', '#6cff8b', '#6c8bff', '#9c6bff', '#ffb86c'];
+                
+                goals.forEach((goal, index) => {
+                    const goalAmount = goal.amount;
+                    if (!goalAmount || goalAmount <= 0) return;
 
-                ctx.save();
-                ctx.strokeStyle = '#ffa500';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([8, 4]);
-                ctx.beginPath();
-                ctx.moveTo(chartArea.left, y);
-                ctx.lineTo(chartArea.right, y);
-                ctx.stroke();
+                    const y = scales.y.getPixelForValue(goalAmount);
+                    if (y < chartArea.top || y > chartArea.bottom) return;
 
-                ctx.fillStyle = '#ffa500';
-                ctx.font = 'bold 11px Space Grotesk';
-                ctx.textAlign = 'right';
-                ctx.fillText(`Meta: ${formatCurrency(goalAmount)}`, chartArea.right - 8, y - 6);
-                ctx.restore();
+                    const color = colors[index % colors.length];
+                    
+                    ctx.save();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([8, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(chartArea.left, y);
+                    ctx.lineTo(chartArea.right, y);
+                    ctx.stroke();
+
+                    ctx.fillStyle = color;
+                    ctx.font = 'bold 11px Space Grotesk';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`${goal.name}: ${formatCurrency(goalAmount)}`, chartArea.right - 8, y - 6);
+                    ctx.restore();
+                });
             },
         };
 
@@ -763,10 +876,7 @@
             freeInputs.annualPercentageOptimistic.value = state.annualPercentageOptimistic;
             inputs.yearsSimulation.value = state.yearsSimulation;
             numberInputs.yearsSimulation.value = state.yearsSimulation;
-            inputs.monthlyAddOnsStart.value = state.monthlyAddOnsStart;
-            inputs.monthlyAddOnsEnd.value = state.monthlyAddOnsEnd;
             inputs.initialAge.value = state.initialAge;
-            inputs.goalAmount.value = state.goalAmount;
         };
 
         applySettings(initialSettings);
@@ -775,8 +885,7 @@
             initialInvestment,
             annualPercentage,
             yearsSimulation,
-            monthlyAddOnsStart,
-            monthlyAddOnsEnd,
+            monthlyContributionPeriods,
             initialAge,
             events = [],
             pauseYears = [],
@@ -788,29 +897,47 @@
             const data = [];
             const contributionLine = [];
             let cumulativeContributions = initialInvestment;
-            const contributionDelta = monthlyAddOnsEnd - monthlyAddOnsStart;
             let hasInvalidWithdrawal = false;
 
-            // Convert events to month-based map (apply at START of year, not end)
-            const eventsByMonth = {};
+            // Convert events to year ranges map
+            const eventsByYear = {};
             events.forEach(event => {
-                const eventMonth = (event.year - 1) * 12; // Year 1 = month 0, Year 2 = month 12, etc.
-                if (eventMonth >= 0 && eventMonth <= months) {
-                    eventsByMonth[eventMonth] = (eventsByMonth[eventMonth] || 0) + event.amount;
+                const startYear = event.startYear || event.year; // Support old format
+                const endYear = event.endYear || event.year;
+                for (let y = startYear; y <= endYear; y++) {
+                    eventsByYear[y] = (eventsByYear[y] || 0) + event.amount;
                 }
             });
             
-            // Convert extraordinary contributions to month-based map (apply at START of year, not end)
-            const contributionsByMonth = {};
+            // Convert extraordinary contributions to year ranges map
+            const contributionsByYear = {};
             extraordinaryContributions.forEach(contrib => {
-                const contribMonth = (contrib.year - 1) * 12; // Year 1 = month 0, Year 2 = month 12, etc.
-                if (contribMonth >= 0 && contribMonth <= months) {
-                    contributionsByMonth[contribMonth] = (contributionsByMonth[contribMonth] || 0) + contrib.amount;
+                const startYear = contrib.startYear || contrib.year; // Support old format
+                const endYear = contrib.endYear || contrib.year;
+                for (let y = startYear; y <= endYear; y++) {
+                    contributionsByYear[y] = (contributionsByYear[y] || 0) + contrib.amount;
                 }
             });
 
-            // Create set of paused years for quick lookup
-            const pausedYearsSet = new Set(pauseYears);
+            // Create set of paused year ranges
+            const pausedYearsSet = new Set();
+            pauseYears.forEach(pause => {
+                const startYear = pause.startYear || pause; // Support old format (single year)
+                const endYear = pause.endYear || pause;
+                for (let y = startYear; y <= endYear; y++) {
+                    pausedYearsSet.add(y);
+                }
+            });
+
+            // Function to get monthly contribution for a given year
+            const getMonthlyContribution = (year) => {
+                for (let period of monthlyContributionPeriods) {
+                    if (year >= period.startYear && year <= period.endYear) {
+                        return period.amount;
+                    }
+                }
+                return 0; // No contribution period defined for this year
+            };
 
             for (let month = 0; month <= months; month += 1) {
                 const yearValue = month / 12;
@@ -820,16 +947,16 @@
                     '';
                 const ageValue = initialAge + month / 12;
                 const ageLabel = formatDecimalLabel(ageValue);
-                const progress = months ? month / months : 1;
                 
                 // Check if this year has paused contributions
-                const isPaused = pausedYearsSet.has(flooredYear + 1); // Check against user-facing year number
-                const monthlyAddOns = isPaused ? 0 : monthlyAddOnsStart + contributionDelta * progress;
+                const isPaused = pausedYearsSet.has(flooredYear);
+                const baseMontlyContribution = getMonthlyContribution(flooredYear);
+                const monthlyAddOns = isPaused ? 0 : baseMontlyContribution;
                 
-                // Apply discrete event withdrawal if exists (BEFORE recording balance)
+                // Apply discrete event withdrawal if exists (at START of year)
                 let invalidWithdrawal = false;
-                if (eventsByMonth[month]) {
-                    const withdrawalAmount = eventsByMonth[month];
+                if (month % 12 === 0 && eventsByYear[flooredYear]) {
+                    const withdrawalAmount = eventsByYear[flooredYear];
                     if (withdrawalAmount > balance) {
                         hasInvalidWithdrawal = true;
                         invalidWithdrawal = true;
@@ -837,10 +964,10 @@
                     balance = Math.max(0, balance - withdrawalAmount);
                 }
                 
-                // Apply extraordinary contribution if exists (BEFORE recording balance)
-                if (contributionsByMonth[month]) {
-                    balance += contributionsByMonth[month];
-                    cumulativeContributions += contributionsByMonth[month];
+                // Apply extraordinary contribution if exists (at START of year)
+                if (month % 12 === 0 && contributionsByYear[flooredYear]) {
+                    balance += contributionsByYear[flooredYear];
+                    cumulativeContributions += contributionsByYear[flooredYear];
                 }
                 
                 data.push({
@@ -851,11 +978,11 @@
                     ageValue,
                     ageLabel,
                     monthlyContribution: Math.round(monthlyAddOns),
-                    hasEvent: !!eventsByMonth[month],
-                    eventAmount: eventsByMonth[month] || 0,
+                    hasEvent: !!(month % 12 === 0 && eventsByYear[flooredYear]),
+                    eventAmount: (month % 12 === 0 && eventsByYear[flooredYear]) || 0,
                     invalidWithdrawal,
-                    hasContribution: !!contributionsByMonth[month],
-                    contributionAmount: contributionsByMonth[month] || 0,
+                    hasContribution: !!(month % 12 === 0 && contributionsByYear[flooredYear]),
+                    contributionAmount: (month % 12 === 0 && contributionsByYear[flooredYear]) || 0,
                 });
                 contributionLine.push(cumulativeContributions);
 
@@ -874,14 +1001,37 @@
         };
 
         const updateLabels = () => {
-            labels.initialInvestment.textContent = `$${Number(freeInputs.initialInvestment.value).toLocaleString('en-US')}`;
-            labels.annualPercentagePessimistic.textContent = `${parseFloat(freeInputs.annualPercentagePessimistic.value).toFixed(1)} %`;
-            labels.annualPercentageOptimistic.textContent = `${parseFloat(freeInputs.annualPercentageOptimistic.value).toFixed(1)} %`;
-            labels.yearsSimulation.textContent = `${inputs.yearsSimulation.value} años`;
-            labels.monthlyAddOnsStart.textContent = formatCurrency(Number(inputs.monthlyAddOnsStart.value));
-            labels.monthlyAddOnsEnd.textContent = formatCurrency(Number(inputs.monthlyAddOnsEnd.value));
-            labels.initialAge.textContent = `${inputs.initialAge.value} años`;
-            labels.goalAmount.textContent = formatCurrency(Number(inputs.goalAmount.value));
+            const labelElements = {
+                initialInvestment: document.getElementById('initialInvestmentLabel'),
+                annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticLabel'),
+                annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticLabel'),
+                yearsSimulation: document.getElementById('yearsSimulationLabel'),
+                initialAge: document.getElementById('initialAgeLabel'),
+            };
+            
+            const inputElements = {
+                initialInvestment: document.getElementById('initialInvestmentNumber'),
+                annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticNumber'),
+                annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticNumber'),
+                yearsSimulation: document.getElementById('yearsSimulation'),
+                initialAge: document.getElementById('initialAge'),
+            };
+            
+            if (labelElements.initialInvestment && inputElements.initialInvestment) {
+                labelElements.initialInvestment.textContent = `$${Number(inputElements.initialInvestment.value).toLocaleString('en-US')}`;
+            }
+            if (labelElements.annualPercentagePessimistic && inputElements.annualPercentagePessimistic) {
+                labelElements.annualPercentagePessimistic.textContent = `${parseFloat(inputElements.annualPercentagePessimistic.value).toFixed(1)} %`;
+            }
+            if (labelElements.annualPercentageOptimistic && inputElements.annualPercentageOptimistic) {
+                labelElements.annualPercentageOptimistic.textContent = `${parseFloat(inputElements.annualPercentageOptimistic.value).toFixed(1)} %`;
+            }
+            if (labelElements.yearsSimulation && inputElements.yearsSimulation) {
+                labelElements.yearsSimulation.textContent = `${inputElements.yearsSimulation.value} años`;
+            }
+            if (labelElements.initialAge && inputElements.initialAge) {
+                labelElements.initialAge.textContent = `${inputElements.initialAge.value} años`;
+            }
         };
 
         const syncNumberFields = () => {
@@ -900,26 +1050,113 @@
                 .filter(Boolean);
         };
 
+        // Update stats description with highlighted numbers
+        const updateStatsDescription = () => {
+            const descElement = document.querySelector('#statsDescription p');
+            if (!descElement) return;
+
+            // Get fresh references
+            const currentInitialInv = document.getElementById('initialInvestmentNumber');
+            const currentYears = document.getElementById('yearsSimulation');
+            
+            const initialInv = currentInitialInv ? Number(currentInitialInv.value) : 0;
+            const years = currentYears ? Number(currentYears.value) : 0;
+            const totalContributed = stats.totalContributions.textContent;
+            const pessimisticBalance = stats.pessimisticBalance.textContent;
+            const optimisticBalance = stats.optimisticBalance.textContent;
+            const pessimisticGain = stats.pessimisticGain.textContent;
+            const optimisticGain = stats.optimisticGain.textContent;
+
+            let description = `Comenzaste con <strong style="color: #6c8bff; font-size: 1.1em;">${formatCurrency(initialInv)}</strong> de capital inicial. `;
+
+            // Describe monthly contribution periods
+            if (monthlyContributionPeriods.length > 0) {
+                description += `Durante estos <strong style="color: #9c6bff;">${years} años</strong>, realizaste aportes mensuales: `;
+                monthlyContributionPeriods.sort((a, b) => a.startYear - b.startYear);
+                const periodDescriptions = monthlyContributionPeriods.map(p => {
+                    if (p.startYear === p.endYear) {
+                        return `<strong style="color: #9c6bff;">${formatCurrency(p.amount)}/mes</strong> en el año ${p.startYear}`;
+                    }
+                    return `<strong style="color: #9c6bff;">${formatCurrency(p.amount)}/mes</strong> del año ${p.startYear} al ${p.endYear}`;
+                });
+                description += periodDescriptions.join(', ') + '. ';
+            }
+
+            // Describe pause years
+            if (pauseYears.length > 0) {
+                const pauseDescriptions = pauseYears.map(p => {
+                    const start = p.startYear || p;
+                    const end = p.endYear || p;
+                    return start === end ? `año ${start}` : `años ${start}-${end}`;
+                });
+                description += `Pausaste aportes en: <strong style="color: #6c8bff;">${pauseDescriptions.join(', ')}</strong>. `;
+            }
+
+            // Describe extraordinary contributions
+            if (extraordinaryContributions.length > 0) {
+                extraordinaryContributions.sort((a, b) => {
+                    const aStart = a.startYear || a.year;
+                    const bStart = b.startYear || b.year;
+                    return aStart - bStart;
+                });
+                const contribDescriptions = extraordinaryContributions.map(c => {
+                    const start = c.startYear || c.year;
+                    const end = c.endYear || c.year;
+                    const period = start === end ? `año ${start}` : `años ${start}-${end}`;
+                    return `<strong style="color: #6cff8b;">${formatCurrency(c.amount)}</strong> en ${period}`;
+                });
+                description += `Aportes extraordinarios de ${contribDescriptions.join(', ')}. `;
+            }
+
+            // Describe events/withdrawals
+            if (discreteEvents.length > 0) {
+                discreteEvents.sort((a, b) => {
+                    const aStart = a.startYear || a.year;
+                    const bStart = b.startYear || b.year;
+                    return aStart - bStart;
+                });
+                const eventDescriptions = discreteEvents.map(e => {
+                    const start = e.startYear || e.year;
+                    const end = e.endYear || e.year;
+                    const period = start === end ? `año ${start}` : `años ${start}-${end}`;
+                    return `<strong style="color: #ff6e95;">${formatCurrency(e.amount)}</strong> en ${period}`;
+                });
+                description += `Retiraste ${eventDescriptions.join(', ')}. `;
+            }
+
+            // Final results
+            description += `<br><br>💰 <strong>Resultado final:</strong> Con un total aportado de <strong style="color: #ffb86c; font-size: 1.15em;">${totalContributed}</strong>, alcanzarías entre <strong style="color: #ff6e95; font-size: 1.15em;">${pessimisticBalance}</strong> (pesimista, ganancia de <strong style="color: #ff6e95;">${pessimisticGain}</strong>) y <strong style="color: #6cff8b; font-size: 1.15em;">${optimisticBalance}</strong> (optimista, ganancia de <strong style="color: #6cff8b;">${optimisticGain}</strong>).`;
+
+            descElement.innerHTML = description;
+        };
+
         const updateView = () => {
+            // Get fresh references to inputs
+            const currentInputs = {
+                initialInvestment: document.getElementById('initialInvestmentNumber'),
+                annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticNumber'),
+                annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticNumber'),
+                yearsSimulation: document.getElementById('yearsSimulation'),
+                initialAge: document.getElementById('initialAge'),
+            };
+
             const pessimisticSim = simulate({
-                initialInvestment: Number(freeInputs.initialInvestment.value),
-                annualPercentage: Number(freeInputs.annualPercentagePessimistic.value),
-                yearsSimulation: Number(inputs.yearsSimulation.value),
-                monthlyAddOnsStart: Number(inputs.monthlyAddOnsStart.value),
-                monthlyAddOnsEnd: Number(inputs.monthlyAddOnsEnd.value),
-                initialAge: Number(inputs.initialAge.value),
+                initialInvestment: Number(currentInputs.initialInvestment.value),
+                annualPercentage: Number(currentInputs.annualPercentagePessimistic.value),
+                yearsSimulation: Number(currentInputs.yearsSimulation.value),
+                monthlyContributionPeriods: monthlyContributionPeriods,
+                initialAge: Number(currentInputs.initialAge.value),
                 events: discreteEvents,
                 pauseYears: pauseYears,
                 extraordinaryContributions: extraordinaryContributions,
             });
 
             const optimisticSim = simulate({
-                initialInvestment: Number(freeInputs.initialInvestment.value),
-                annualPercentage: Number(freeInputs.annualPercentageOptimistic.value),
-                yearsSimulation: Number(inputs.yearsSimulation.value),
-                monthlyAddOnsStart: Number(inputs.monthlyAddOnsStart.value),
-                monthlyAddOnsEnd: Number(inputs.monthlyAddOnsEnd.value),
-                initialAge: Number(inputs.initialAge.value),
+                initialInvestment: Number(currentInputs.initialInvestment.value),
+                annualPercentage: Number(currentInputs.annualPercentageOptimistic.value),
+                yearsSimulation: Number(currentInputs.yearsSimulation.value),
+                monthlyContributionPeriods: monthlyContributionPeriods,
+                initialAge: Number(currentInputs.initialAge.value),
                 events: discreteEvents,
                 pauseYears: pauseYears,
                 extraordinaryContributions: extraordinaryContributions,
@@ -956,33 +1193,45 @@
             stats.optimisticGain.textContent = `+${formatCurrency(optimisticDiff)} (+${optimisticPercent}%)`;
             stats.totalContributions.textContent = formatCurrency(pessimisticSim.totalContributions);
             
-            // Calculate years to goal and age at goal
-            const goalAmount = Number(inputs.goalAmount.value);
+            // Calculate years to goal and age at goal for EACH goal
             const initialAge = Number(inputs.initialAge.value);
             
-            const pessimisticGoalIndex = pessimisticSim.data.findIndex(row => row.balance >= goalAmount);
-            if (pessimisticGoalIndex !== -1) {
-                const yearsToGoal = Math.floor(pessimisticSim.data[pessimisticGoalIndex].month / 12);
-                const ageAtGoal = Math.floor(initialAge + yearsToGoal);
-                stats.pessimisticGoal.textContent = `🎯 Objetivo en ${yearsToGoal} años (${ageAtGoal} años de edad)`;
-            } else {
-                stats.pessimisticGoal.textContent = '🎯 Objetivo no alcanzado en este período';
-            }
+            // For pessimistic scenario
+            let pessimisticGoalText = '';
+            goals.forEach((goal, index) => {
+                const pessimisticGoalIndex = pessimisticSim.data.findIndex(row => row.balance >= goal.amount);
+                if (pessimisticGoalIndex !== -1) {
+                    const yearsToGoal = Math.floor(pessimisticSim.data[pessimisticGoalIndex].month / 12);
+                    const ageAtGoal = Math.floor(initialAge + yearsToGoal);
+                    pessimisticGoalText += `🎯 ${goal.name}: ${yearsToGoal} años (${ageAtGoal} años)\n`;
+                } else {
+                    pessimisticGoalText += `🎯 ${goal.name}: No alcanzado\n`;
+                }
+            });
+            stats.pessimisticGoal.innerHTML = pessimisticGoalText.trim().replace(/\n/g, '<br>');
             
-            const optimisticGoalIndex = optimisticSim.data.findIndex(row => row.balance >= goalAmount);
-            if (optimisticGoalIndex !== -1) {
-                const yearsToGoal = Math.floor(optimisticSim.data[optimisticGoalIndex].month / 12);
-                const ageAtGoal = Math.floor(initialAge + yearsToGoal);
-                stats.optimisticGoal.textContent = `🎯 Objetivo en ${yearsToGoal} años (${ageAtGoal} años de edad)`;
-            } else {
-                stats.optimisticGoal.textContent = '🎯 Objetivo no alcanzado en este período';
-            }
+            // For optimistic scenario
+            let optimisticGoalText = '';
+            goals.forEach((goal, index) => {
+                const optimisticGoalIndex = optimisticSim.data.findIndex(row => row.balance >= goal.amount);
+                if (optimisticGoalIndex !== -1) {
+                    const yearsToGoal = Math.floor(optimisticSim.data[optimisticGoalIndex].month / 12);
+                    const ageAtGoal = Math.floor(initialAge + yearsToGoal);
+                    optimisticGoalText += `🎯 ${goal.name}: ${yearsToGoal} años (${ageAtGoal} años)\n`;
+                } else {
+                    optimisticGoalText += `🎯 ${goal.name}: No alcanzado\n`;
+                }
+            });
+            stats.optimisticGoal.innerHTML = optimisticGoalText.trim().replace(/\n/g, '<br>');
             
             // Calculate 4% rule monthly rent
             const pessimisticMonthlyRent = (pessimisticSim.finalBalance * 0.04) / 12;
             const optimisticMonthlyRent = (optimisticSim.finalBalance * 0.04) / 12;
             stats.pessimisticRent.textContent = formatCurrency(pessimisticMonthlyRent);
             stats.optimisticRent.textContent = formatCurrency(optimisticMonthlyRent);
+            
+            // Update stats description
+            updateStatsDescription();
         };
 
         const clampValue = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -994,15 +1243,23 @@
         };
 
         const persistSettings = () => {
+            // Get fresh references
+            const currentInputs = {
+                initialInvestment: document.getElementById('initialInvestmentNumber'),
+                annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticNumber'),
+                annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticNumber'),
+                yearsSimulation: document.getElementById('yearsSimulation'),
+                initialAge: document.getElementById('initialAge'),
+            };
+            
             const payload = {
-                initialInvestment: Number(freeInputs.initialInvestment.value),
-                annualPercentagePessimistic: Number(freeInputs.annualPercentagePessimistic.value),
-                annualPercentageOptimistic: Number(freeInputs.annualPercentageOptimistic.value),
-                yearsSimulation: Number(inputs.yearsSimulation.value),
-                initialAge: Number(inputs.initialAge.value),
-                monthlyAddOnsStart: Number(inputs.monthlyAddOnsStart.value),
-                monthlyAddOnsEnd: Number(inputs.monthlyAddOnsEnd.value),
-                goalAmount: Number(inputs.goalAmount.value),
+                initialInvestment: currentInputs.initialInvestment ? Number(currentInputs.initialInvestment.value) : 15000,
+                annualPercentagePessimistic: currentInputs.annualPercentagePessimistic ? Number(currentInputs.annualPercentagePessimistic.value) : 6,
+                annualPercentageOptimistic: currentInputs.annualPercentageOptimistic ? Number(currentInputs.annualPercentageOptimistic.value) : 10,
+                yearsSimulation: currentInputs.yearsSimulation ? Number(currentInputs.yearsSimulation.value) : 20,
+                initialAge: currentInputs.initialAge ? Number(currentInputs.initialAge.value) : 30,
+                monthlyContributionPeriods: monthlyContributionPeriods,
+                goals: goals,
                 events: discreteEvents,
                 pauseYears: pauseYears,
                 extraordinaryContributions: extraordinaryContributions,
@@ -1051,7 +1308,157 @@
 
         Object.values(inputs).forEach((input) => input.addEventListener('input', handleInput));
 
+        // Monthly contribution periods management
+        let editingPeriodIndex = -1;
+        
+        const renderMonthlyPeriods = () => {
+            const periodsList = document.getElementById('monthlyContributionPeriodsList');
+            if (monthlyContributionPeriods.length === 0) {
+                periodsList.innerHTML = '<p style="color: #6a7185; font-size: 0.85em; font-style: italic;">Sin periodos definidos</p>';
+                return;
+            }
+            
+            monthlyContributionPeriods.sort((a, b) => a.startYear - b.startYear);
+            periodsList.innerHTML = monthlyContributionPeriods.map((period, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #9c6bff;">
+                    <div>
+                        <span style="color: #d8e1ff; font-weight: 600;">Años ${period.startYear} - ${period.endYear}</span>
+                        <span style="color: #a0aac7; margin-left: 12px;">${formatCurrency(period.amount)}/mes</span>
+                    </div>
+                    <div>
+                        <button onclick="editMonthlyPeriod(${index})" class="edit-btn">✎ Editar</button>
+                        <button onclick="removeMonthlyPeriod(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        window.editMonthlyPeriod = (index) => {
+            editingPeriodIndex = index;
+            const period = monthlyContributionPeriods[index];
+            document.getElementById('periodStartYear').value = period.startYear;
+            document.getElementById('periodEndYear').value = period.endYear;
+            document.getElementById('periodAmount').value = period.amount;
+            const btn = document.getElementById('addPeriodBtn');
+            btn.textContent = '✓ Actualizar';
+            btn.style.background = '#ffa500';
+        };
+
+        window.removeMonthlyPeriod = (index) => {
+            monthlyContributionPeriods.splice(index, 1);
+            renderMonthlyPeriods();
+            persistSettings();
+            updateView();
+        };
+
+        window.addMonthlyPeriod = () => {
+            const startYear = parseInt(document.getElementById('periodStartYear').value);
+            const endYearValue = document.getElementById('periodEndYear').value;
+            const endYear = endYearValue ? parseInt(endYearValue) : startYear;
+            const amount = parseFloat(document.getElementById('periodAmount').value);
+            
+            if (isNaN(startYear) || isNaN(amount) || amount < 0) {
+                alert('Por favor, ingresa valores válidos');
+                return;
+            }
+            
+            if (endYear < startYear) {
+                alert('El año final no puede ser menor que el año inicial');
+                return;
+            }
+            
+            if (editingPeriodIndex >= 0) {
+                monthlyContributionPeriods[editingPeriodIndex] = { startYear, endYear, amount };
+                editingPeriodIndex = -1;
+                const btn = document.getElementById('addPeriodBtn');
+                btn.textContent = '+ Agregar';
+                btn.style.background = '#6c8bff';
+            } else {
+                monthlyContributionPeriods.push({ startYear, endYear, amount });
+            }
+            
+            document.getElementById('periodStartYear').value = '';
+            document.getElementById('periodEndYear').value = '';
+            document.getElementById('periodAmount').value = '';
+            renderMonthlyPeriods();
+            updateView();
+            persistSettings();
+        };
+
+        // Goals management
+        let editingGoalIndex = -1;
+        
+        const renderGoals = () => {
+            const goalsList = document.getElementById('goalsList');
+            if (goals.length === 0) {
+                goalsList.innerHTML = '<p style="color: #6a7185; font-size: 0.85em; font-style: italic;">Sin objetivos definidos</p>';
+                return;
+            }
+            
+            goals.sort((a, b) => a.amount - b.amount);
+            const colors = ['#ffa500', '#ff6e95', '#6cff8b', '#6c8bff', '#9c6bff', '#ffb86c'];
+            goalsList.innerHTML = goals.map((goal, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid ${colors[index % colors.length]};">
+                    <div>
+                        <span style="color: #d8e1ff; font-weight: 600;">${goal.name}</span>
+                        <span style="color: #a0aac7; margin-left: 12px;">${formatCurrency(goal.amount)}</span>
+                    </div>
+                    <div>
+                        <button onclick="editGoal(${index})" class="edit-btn">✎ Editar</button>
+                        <button onclick="removeGoal(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        window.editGoal = (index) => {
+            editingGoalIndex = index;
+            const goal = goals[index];
+            document.getElementById('goalName').value = goal.name;
+            document.getElementById('goalAmount').value = goal.amount;
+            const btn = document.getElementById('addGoalBtn');
+            btn.textContent = '✓ Actualizar';
+            btn.style.background = '#6cff8b';
+            btn.style.color = '#0a0e27';
+        };
+
+        window.removeGoal = (index) => {
+            goals.splice(index, 1);
+            renderGoals();
+            persistSettings();
+            updateView();
+        };
+
+        window.addGoal = () => {
+            const name = document.getElementById('goalName').value.trim();
+            const amount = parseFloat(document.getElementById('goalAmount').value);
+            
+            if (!name || isNaN(amount) || amount <= 0) {
+                alert('Por favor, ingresa un nombre y un monto válido');
+                return;
+            }
+            
+            if (editingGoalIndex >= 0) {
+                goals[editingGoalIndex] = { name, amount };
+                editingGoalIndex = -1;
+                const btn = document.getElementById('addGoalBtn');
+                btn.textContent = '+ Agregar';
+                btn.style.background = '#6cff8b';
+                btn.style.color = '#0a0e27';
+            } else {
+                goals.push({ name, amount });
+            }
+            
+            document.getElementById('goalName').value = '';
+            document.getElementById('goalAmount').value = '';
+            renderGoals();
+            updateView();
+            persistSettings();
+        };
+
         // Pause years management
+        let editingPauseIndex = -1;
+        
         const renderPauseYears = () => {
             const pauseYearsList = document.getElementById('pauseYearsList');
             if (pauseYears.length === 0) {
@@ -1059,13 +1466,37 @@
                 return;
             }
             
-            pauseYears.sort((a, b) => a - b);
-            pauseYearsList.innerHTML = pauseYears.map((year, index) => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #6c8bff;">
-                    <span style="color: #d8e1ff; font-weight: 600;">Año ${year}</span>
-                    <button onclick="removePauseYear(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
-                </div>
-            `).join('');
+            pauseYears.sort((a, b) => {
+                const aStart = a.startYear || a;
+                const bStart = b.startYear || b;
+                return aStart - bStart;
+            });
+            pauseYearsList.innerHTML = pauseYears.map((pause, index) => {
+                const startYear = pause.startYear || pause;
+                const endYear = pause.endYear || pause;
+                const label = startYear === endYear ? `Año ${startYear}` : `Años ${startYear} - ${endYear}`;
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #6c8bff;">
+                        <span style="color: #d8e1ff; font-weight: 600;">${label}</span>
+                        <div>
+                            <button onclick="editPauseYear(${index})" class="edit-btn">✎ Editar</button>
+                            <button onclick="removePauseYear(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+        
+        window.editPauseYear = (index) => {
+            editingPauseIndex = index;
+            const pause = pauseYears[index];
+            const startYear = pause.startYear || pause;
+            const endYear = pause.endYear || pause;
+            document.getElementById('pauseYearStart').value = startYear;
+            document.getElementById('pauseYearEnd').value = startYear === endYear ? '' : endYear;
+            const btn = document.getElementById('addPauseYearBtn');
+            btn.textContent = '✓ Actualizar';
+            btn.style.background = '#ffa500';
         };
 
         window.removePauseYear = (index) => {
@@ -1075,26 +1506,43 @@
             updateView();
         };
 
-        document.getElementById('addPauseYearBtn').addEventListener('click', () => {
-            const year = Number(document.getElementById('pauseYear').value);
+        window.addPauseYear = () => {
+            const startYear = parseInt(document.getElementById('pauseYearStart').value);
+            const endYearValue = document.getElementById('pauseYearEnd').value;
+            const endYear = endYearValue ? parseInt(endYearValue) : startYear;
             
-            if (year <= 0) {
-                alert('Por favor ingresa un año válido (mayor a 0)');
+            if (isNaN(startYear)) {
+                alert('Por favor, ingresa un año válido');
                 return;
             }
             
-            if (pauseYears.includes(year)) {
-                alert('Este año ya está en la lista');
+            if (endYear < startYear) {
+                alert('El año final no puede ser menor que el año inicial');
                 return;
             }
             
-            pauseYears.push(year);
+            const newPause = startYear === endYear ? startYear : { startYear, endYear };
+            
+            if (editingPauseIndex >= 0) {
+                pauseYears[editingPauseIndex] = newPause;
+                editingPauseIndex = -1;
+                const btn = document.getElementById('addPauseYearBtn');
+                btn.textContent = '+ Agregar';
+                btn.style.background = '#6c8bff';
+            } else {
+                pauseYears.push(newPause);
+            }
+            
+            document.getElementById('pauseYearStart').value = '';
+            document.getElementById('pauseYearEnd').value = '';
             renderPauseYears();
-            persistSettings();
             updateView();
-        });
+            persistSettings();
+        };
 
         // Event management
+        let editingEventIndex = -1;
+        
         const renderEvents = () => {
             const eventsList = document.getElementById('eventsList');
             if (discreteEvents.length === 0) {
@@ -1102,16 +1550,41 @@
                 return;
             }
             
-            discreteEvents.sort((a, b) => a.year - b.year);
-            eventsList.innerHTML = discreteEvents.map((event, index) => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #ffa500;">
-                    <div>
-                        <span style="color: #d8e1ff; font-weight: 600;">Año ${event.year}</span>
-                        <span style="color: #a0aac7; margin-left: 12px;">${formatCurrency(event.amount)}</span>
+            discreteEvents.sort((a, b) => {
+                const aStart = a.startYear || a.year;
+                const bStart = b.startYear || b.year;
+                return aStart - bStart;
+            });
+            eventsList.innerHTML = discreteEvents.map((event, index) => {
+                const startYear = event.startYear || event.year;
+                const endYear = event.endYear || event.year;
+                const label = startYear === endYear ? `Año ${startYear}` : `Años ${startYear} - ${endYear}`;
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #ff6e95;">
+                        <div>
+                            <span style="color: #d8e1ff; font-weight: 600;">${label}</span>
+                            <span style="color: #a0aac7; margin-left: 12px;">${formatCurrency(event.amount)}</span>
+                        </div>
+                        <div>
+                            <button onclick="editEvent(${index})" class="edit-btn">✎ Editar</button>
+                            <button onclick="removeEvent(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                        </div>
                     </div>
-                    <button onclick="removeEvent(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        };
+        
+        window.editEvent = (index) => {
+            editingEventIndex = index;
+            const event = discreteEvents[index];
+            const startYear = event.startYear || event.year;
+            const endYear = event.endYear || event.year;
+            document.getElementById('eventYearStart').value = startYear;
+            document.getElementById('eventYearEnd').value = startYear === endYear ? '' : endYear;
+            document.getElementById('eventAmount').value = event.amount;
+            const btn = document.getElementById('addEventBtn');
+            btn.textContent = '✓ Actualizar';
+            btn.style.background = '#ffa500';
         };
 
         window.removeEvent = (index) => {
@@ -1121,22 +1594,45 @@
             updateView();
         };
 
-        document.getElementById('addEventBtn').addEventListener('click', () => {
-            const year = Number(document.getElementById('eventYear').value);
-            const amount = Number(document.getElementById('eventAmount').value);
+        window.addEvent = () => {
+            const startYear = parseInt(document.getElementById('eventYearStart').value);
+            const endYearValue = document.getElementById('eventYearEnd').value;
+            const endYear = endYearValue ? parseInt(endYearValue) : startYear;
+            const amount = parseFloat(document.getElementById('eventAmount').value);
             
-            if (year <= 0 || amount <= 0) {
-                alert('Por favor ingresa valores válidos (año > 0 y monto > 0)');
+            if (isNaN(startYear) || isNaN(amount)) {
+                alert('Por favor, ingresa valores válidos');
                 return;
             }
             
-            discreteEvents.push({ year, amount });
+            if (endYear < startYear) {
+                alert('El año final no puede ser menor que el año inicial');
+                return;
+            }
+            
+            const newEvent = startYear === endYear ? { year: startYear, amount } : { startYear, endYear, amount };
+            
+            if (editingEventIndex >= 0) {
+                discreteEvents[editingEventIndex] = newEvent;
+                editingEventIndex = -1;
+                const btn = document.getElementById('addEventBtn');
+                btn.textContent = '+ Agregar';
+                btn.style.background = '#6c8bff';
+            } else {
+                discreteEvents.push(newEvent);
+            }
+            
+            document.getElementById('eventYearStart').value = '';
+            document.getElementById('eventYearEnd').value = '';
+            document.getElementById('eventAmount').value = '';
             renderEvents();
-            persistSettings();
             updateView();
-        });
+            persistSettings();
+        };
 
         // Extraordinary contributions management
+        let editingContributionIndex = -1;
+        
         const renderExtraordinaryContributions = () => {
             const contributionsList = document.getElementById('extraordinaryContributionsList');
             if (extraordinaryContributions.length === 0) {
@@ -1144,13 +1640,38 @@
                 return;
             }
             
-            extraordinaryContributions.sort((a, b) => a.year - b.year);
-            contributionsList.innerHTML = extraordinaryContributions.map((contrib, index) => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #6cff8b;">
-                    <span style="color: #d8e1ff;"><strong>Año ${contrib.year}:</strong> ${formatCurrency(contrib.amount)}</span>
-                    <button onclick="removeExtraordinaryContribution(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
-                </div>
-            `).join('');
+            extraordinaryContributions.sort((a, b) => {
+                const aStart = a.startYear || a.year;
+                const bStart = b.startYear || b.year;
+                return aStart - bStart;
+            });
+            contributionsList.innerHTML = extraordinaryContributions.map((contrib, index) => {
+                const startYear = contrib.startYear || contrib.year;
+                const endYear = contrib.endYear || contrib.year;
+                const label = startYear === endYear ? `Año ${startYear}` : `Años ${startYear} - ${endYear}`;
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #6cff8b;">
+                        <span style="color: #d8e1ff;"><strong>${label}:</strong> ${formatCurrency(contrib.amount)}</span>
+                        <div>
+                            <button onclick="editExtraordinaryContribution(${index})" class="edit-btn">✎ Editar</button>
+                            <button onclick="removeExtraordinaryContribution(${index})" style="background: rgba(255, 110, 149, 0.2); color: #ff6e95; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: 600;">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+        
+        window.editExtraordinaryContribution = (index) => {
+            editingContributionIndex = index;
+            const contrib = extraordinaryContributions[index];
+            const startYear = contrib.startYear || contrib.year;
+            const endYear = contrib.endYear || contrib.year;
+            document.getElementById('contributionYearStart').value = startYear;
+            document.getElementById('contributionYearEnd').value = startYear === endYear ? '' : endYear;
+            document.getElementById('contributionAmount').value = contrib.amount;
+            const btn = document.getElementById('addContributionBtn');
+            btn.textContent = '✓ Actualizar';
+            btn.style.background = '#ffa500';
         };
 
         window.removeExtraordinaryContribution = (index) => {
@@ -1160,25 +1681,192 @@
             updateView();
         };
 
-        document.getElementById('addContributionBtn').addEventListener('click', () => {
-            const year = Number(document.getElementById('contributionYear').value);
-            const amount = Number(document.getElementById('contributionAmount').value);
+        window.addExtraordinaryContribution = () => {
+            const startYear = parseInt(document.getElementById('contributionYearStart').value);
+            const endYearValue = document.getElementById('contributionYearEnd').value;
+            const endYear = endYearValue ? parseInt(endYearValue) : startYear;
+            const amount = parseFloat(document.getElementById('contributionAmount').value);
             
-            if (year <= 0 || amount <= 0) {
-                alert('Por favor ingresa valores válidos (año > 0 y monto > 0)');
+            if (isNaN(startYear) || isNaN(amount) || amount <= 0) {
+                alert('Por favor, ingresa valores válidos');
                 return;
             }
             
-            extraordinaryContributions.push({ year, amount });
+            if (endYear < startYear) {
+                alert('El año final no puede ser menor que el año inicial');
+                return;
+            }
+            
+            const newContribution = startYear === endYear ? { year: startYear, amount } : { startYear, endYear, amount };
+            
+            if (editingContributionIndex >= 0) {
+                extraordinaryContributions[editingContributionIndex] = newContribution;
+                editingContributionIndex = -1;
+                const btn = document.getElementById('addContributionBtn');
+                btn.textContent = '+ Agregar';
+                btn.style.background = '#6c8bff';
+            } else {
+                extraordinaryContributions.push(newContribution);
+            }
+            
+            document.getElementById('contributionYearStart').value = '';
+            document.getElementById('contributionYearEnd').value = '';
+            document.getElementById('contributionAmount').value = '';
             renderExtraordinaryContributions();
-            persistSettings();
             updateView();
-        });
+            persistSettings();
+        };
 
+        renderMonthlyPeriods();
+        renderGoals();
         renderPauseYears();
         renderEvents();
         renderExtraordinaryContributions();
         handleInput();
+
+        // Make control sections collapsible
+        const makeCollapsible = () => {
+            const controls = document.getElementById('mainControls');
+            const controlsArray = Array.from(controls.children);
+            
+            const sections = [];
+            
+            // First 5 elements are basic parameters
+            const basicParams = controlsArray.slice(0, 5).map(el => el.outerHTML).join('');
+            sections.push({ title: '⚙️ Parámetros Básicos', content: basicParams, isOpen: true });
+            
+            // Rest are individual sections
+            for (let i = 5; i < controlsArray.length; i++) {
+                const element = controlsArray[i];
+                const h3 = element.querySelector('h3');
+                if (h3) {
+                    const title = h3.textContent.trim();
+                    sections.push({ 
+                        title: title, 
+                        content: element.outerHTML, 
+                        isOpen: i < 8 // First 3 sections open by default
+                    });
+                }
+            }
+
+            controls.innerHTML = '';
+
+            sections.forEach((section, index) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'collapsible-section';
+                sectionDiv.innerHTML = `
+                    <div class="collapsible-header" onclick="toggleSection(${index})">
+                        <h3>${section.title}</h3>
+                        <span class="collapsible-arrow ${section.isOpen ? 'open' : ''}">▼</span>
+                    </div>
+                    <div class="collapsible-content ${section.isOpen ? 'open' : ''}">
+                        <div class="collapsible-inner">
+                            ${section.content}
+                        </div>
+                    </div>
+                `;
+                controls.appendChild(sectionDiv);
+            });
+        };
+
+        window.toggleSection = (index) => {
+            const sections = document.querySelectorAll('.collapsible-section');
+            const section = sections[index];
+            const content = section.querySelector('.collapsible-content');
+            const arrow = section.querySelector('.collapsible-arrow');
+            
+            content.classList.toggle('open');
+            arrow.classList.toggle('open');
+        };
+
+        // Re-attach event listeners after making sections collapsible
+        const reattachEventListeners = () => {
+            // Re-attach basic parameter listeners
+            Object.entries(numberInputs).forEach(([key, numberField]) => {
+                const rangeField = inputs[key];
+                const newRangeField = document.getElementById(rangeField.id);
+                const newNumberField = document.getElementById(numberField.id);
+                
+                if (newRangeField && newNumberField) {
+                    newRangeField.addEventListener('input', () => {
+                        newNumberField.value = newRangeField.value;
+                        handleInput();
+                    });
+                    newNumberField.addEventListener('input', () => {
+                        const min = Number(newRangeField.min);
+                        const max = Number(newRangeField.max);
+                        const current = Number(newNumberField.value);
+                        if (!Number.isFinite(current)) return;
+                        const clamped = clampValue(current, min, max);
+                        const aligned = alignToStep(clamped, newRangeField.step);
+                        const finalValue = clampValue(aligned, min, max);
+                        newRangeField.value = finalValue;
+                        newNumberField.value = finalValue;
+                        handleInput();
+                    });
+                }
+            });
+
+            Object.entries(freeInputs).forEach(([key, numberField]) => {
+                const rangeField = inputs[key];
+                const newRangeField = document.getElementById(rangeField.id);
+                const newNumberField = document.getElementById(numberField.id);
+                
+                if (newRangeField && newNumberField) {
+                    newRangeField.addEventListener('input', () => {
+                        newNumberField.value = newRangeField.value;
+                        handleInput();
+                    });
+                    newNumberField.addEventListener('input', () => {
+                        const current = Number(newNumberField.value);
+                        if (!Number.isFinite(current)) return;
+                        newRangeField.value = current;
+                        handleInput();
+                    });
+                }
+            });
+
+            // Re-attach input listeners for basic controls
+            Object.keys(inputs).forEach(key => {
+                const newInput = document.getElementById(inputs[key].id);
+                if (newInput && !numberInputs[key] && !freeInputs[key]) {
+                    newInput.addEventListener('input', handleInput);
+                }
+            });
+
+            // Monthly contribution periods
+            const addPeriodBtn = document.getElementById('addPeriodBtn');
+            if (addPeriodBtn) {
+                addPeriodBtn.addEventListener('click', window.addMonthlyPeriod);
+            }
+
+            // Goals
+            const addGoalBtn = document.getElementById('addGoalBtn');
+            if (addGoalBtn) {
+                addGoalBtn.addEventListener('click', window.addGoal);
+            }
+
+            // Pause years
+            const addPauseYearBtn = document.getElementById('addPauseYearBtn');
+            if (addPauseYearBtn) {
+                addPauseYearBtn.addEventListener('click', window.addPauseYear);
+            }
+
+            // Events
+            const addEventBtn = document.getElementById('addEventBtn');
+            if (addEventBtn) {
+                addEventBtn.addEventListener('click', window.addEvent);
+            }
+
+            // Extraordinary contributions
+            const addContributionBtn = document.getElementById('addContributionBtn');
+            if (addContributionBtn) {
+                addContributionBtn.addEventListener('click', window.addExtraordinaryContribution);
+            }
+        };
+
+        makeCollapsible();
+        reattachEventListeners();
     </script>
 </body>
 </html>
