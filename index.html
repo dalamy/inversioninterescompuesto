@@ -262,8 +262,8 @@
                         <span id="initialInvestmentLabel"></span>
                     </div>
                     <div class="input-row">
-                        <input id="initialInvestment" type="range" min="0" max="250000" step="1000" value="15000" />
-                        <input id="initialInvestmentNumber" type="number" min="0" max="250000" step="1000" value="15000" />
+                        <input id="initialInvestment" type="range" min="0" max="250000" step="1000" value="10000" />
+                        <input id="initialInvestmentNumber" type="number" min="0" max="250000" step="1000" value="10000" />
                     </div>
                 </div>
 
@@ -273,8 +273,8 @@
                         <span id="annualPercentagePessimisticLabel"></span>
                     </div>
                     <div class="input-row">
-                        <input id="annualPercentagePessimistic" type="range" min="1" max="30" step="0.1" value="6" />
-                        <input id="annualPercentagePessimisticNumber" type="number" min="1" max="30" step="0.1" value="6" />
+                        <input id="annualPercentagePessimistic" type="range" min="1" max="30" step="0.1" value="8" />
+                        <input id="annualPercentagePessimisticNumber" type="number" min="1" max="30" step="0.1" value="8" />
                     </div>
                 </div>
 
@@ -284,8 +284,8 @@
                         <span id="annualPercentageOptimisticLabel"></span>
                     </div>
                     <div class="input-row">
-                        <input id="annualPercentageOptimistic" type="range" min="1" max="30" step="0.1" value="12" />
-                        <input id="annualPercentageOptimisticNumber" type="number" min="1" max="30" step="0.1" value="12" />
+                        <input id="annualPercentageOptimistic" type="range" min="1" max="30" step="0.1" value="10" />
+                        <input id="annualPercentageOptimisticNumber" type="number" min="1" max="30" step="0.1" value="10" />
                     </div>
                 </div>
 
@@ -295,8 +295,8 @@
                         <span id="yearsSimulationLabel"></span>
                     </div>
                     <div class="input-row">
-                        <input id="yearsSimulation" type="range" min="1" max="60" step="1" value="15" />
-                        <input id="yearsSimulationNumber" type="number" min="1" max="60" step="1" value="15" />
+                        <input id="yearsSimulation" type="range" min="1" max="60" step="1" value="30" />
+                        <input id="yearsSimulationNumber" type="number" min="1" max="60" step="1" value="30" />
                     </div>
                 </div>
 
@@ -305,7 +305,7 @@
                         <label for="initialAge">Edad actual</label>
                         <span id="initialAgeLabel"></span>
                     </div>
-                    <input id="initialAge" type="number" min="18" max="80" step="1" value="34" />
+                    <input id="initialAge" type="number" min="18" max="80" step="1" value="30" />
                 </div>
 
                 <div style="margin-top: 24px; padding: 16px; background: rgba(156, 107, 255, 0.08); border-radius: 12px; border: 1px solid rgba(156, 107, 255, 0.2);">
@@ -585,14 +585,22 @@
     <script>
         const STORAGE_KEY = 'fin-simulator-settings';
         const defaults = {
-            initialInvestment: 15000,
-            annualPercentagePessimistic: 6,
+            initialInvestment: 10000,
+            annualPercentagePessimistic: 8,
             annualPercentageOptimistic: 10,
-            yearsSimulation: 20,
+            yearsSimulation: 30,
             initialAge: 30,
-            monthlyContributionPeriods: [{ startYear: 0, endYear: 20, amount: 500 }],
-            goals: [{ name: 'Objetivo principal', amount: 500000 }],
-            events: [],
+            monthlyContributionPeriods: [{ startYear: 0, endYear: 30, amount: 500 }],
+            goals: [
+                { name: 'Corto plazo', amount: 100000 },
+                { name: 'Mediano plazo', amount: 250000 },
+                { name: 'Largo plazo', amount: 500000 }
+            ],
+            events: [
+                { startYear: 1, endYear: 10, amount: 2500 },
+                { startYear: 10, endYear: 20, amount: 5000 },
+                { startYear: 20, endYear: 30, amount: 7500 }
+            ],
             pauseYears: [],
             extraordinaryContributions: [],
         };
@@ -661,8 +669,12 @@
         let discreteEvents = initialSettings.events || [];
         let pauseYears = initialSettings.pauseYears || [];
         let extraordinaryContributions = initialSettings.extraordinaryContributions || [];
-        let monthlyContributionPeriods = initialSettings.monthlyContributionPeriods || [{ startYear: 0, endYear: 20, amount: 500 }];
-        let goals = initialSettings.goals || [{ name: 'Objetivo principal', amount: 500000 }];
+        let monthlyContributionPeriods = initialSettings.monthlyContributionPeriods || [{ startYear: 0, endYear: 30, amount: 500 }];
+        let goals = initialSettings.goals || [
+            { name: 'Corto plazo', amount: 100000 },
+            { name: 'Mediano plazo', amount: 250000 },
+            { name: 'Largo plazo', amount: 500000 }
+        ];
 
         const milestonePlugin = {
             id: 'milestoneLines',
@@ -877,6 +889,11 @@
             inputs.yearsSimulation.value = state.yearsSimulation;
             numberInputs.yearsSimulation.value = state.yearsSimulation;
             inputs.initialAge.value = state.initialAge;
+            
+            // Force labels update after setting values
+            setTimeout(() => {
+                updateLabels();
+            }, 0);
         };
 
         applySettings(initialSettings);
@@ -1058,9 +1075,13 @@
             // Get fresh references
             const currentInitialInv = document.getElementById('initialInvestmentNumber');
             const currentYears = document.getElementById('yearsSimulation');
+            const currentPessimistic = document.getElementById('annualPercentagePessimisticNumber');
+            const currentOptimistic = document.getElementById('annualPercentageOptimisticNumber');
             
             const initialInv = currentInitialInv ? Number(currentInitialInv.value) : 0;
             const years = currentYears ? Number(currentYears.value) : 0;
+            const pessimisticRate = currentPessimistic ? Number(currentPessimistic.value) : 8;
+            const optimisticRate = currentOptimistic ? Number(currentOptimistic.value) : 10;
             const totalContributed = stats.totalContributions.textContent;
             const pessimisticBalance = stats.pessimisticBalance.textContent;
             const optimisticBalance = stats.optimisticBalance.textContent;
@@ -1121,10 +1142,12 @@
                     const period = start === end ? `año ${start}` : `años ${start}-${end}`;
                     return `<strong style="color: #ff6e95;">${formatCurrency(e.amount)}</strong> en ${period}`;
                 });
-                description += `Retiraste ${eventDescriptions.join(', ')}. `;
+                description += `Realizaste retiros de ${eventDescriptions.join(', ')} que pudieron haber sido para <em style="color: #ffa500;">viajes/vacaciones, compras importantes, cambio de auto, emergencias u otros gastos significativos</em>. `;
             }
 
-            // Final results
+            // Final results with detailed rates
+            description += `<br><br>📊 <strong>Rendimientos aplicados:</strong> Tu inversión creció con dos escenarios: un rendimiento <strong style="color: #ff6e95;">${pessimisticRate}% anual</strong> (escenario pesimista/conservador) y un rendimiento <strong style="color: #6cff8b;">${optimisticRate}% anual</strong> (escenario optimista). Estos porcentajes se componen mensualmente, maximizando el efecto del interés compuesto sobre tus aportes regulares.`;
+            
             description += `<br><br>💰 <strong>Resultado final:</strong> Con un total aportado de <strong style="color: #ffb86c; font-size: 1.15em;">${totalContributed}</strong>, alcanzarías entre <strong style="color: #ff6e95; font-size: 1.15em;">${pessimisticBalance}</strong> (pesimista, ganancia de <strong style="color: #ff6e95;">${pessimisticGain}</strong>) y <strong style="color: #6cff8b; font-size: 1.15em;">${optimisticBalance}</strong> (optimista, ganancia de <strong style="color: #6cff8b;">${optimisticGain}</strong>).`;
 
             descElement.innerHTML = description;
@@ -1253,10 +1276,10 @@
             };
             
             const payload = {
-                initialInvestment: currentInputs.initialInvestment ? Number(currentInputs.initialInvestment.value) : 15000,
-                annualPercentagePessimistic: currentInputs.annualPercentagePessimistic ? Number(currentInputs.annualPercentagePessimistic.value) : 6,
+                initialInvestment: currentInputs.initialInvestment ? Number(currentInputs.initialInvestment.value) : 10000,
+                annualPercentagePessimistic: currentInputs.annualPercentagePessimistic ? Number(currentInputs.annualPercentagePessimistic.value) : 8,
                 annualPercentageOptimistic: currentInputs.annualPercentageOptimistic ? Number(currentInputs.annualPercentageOptimistic.value) : 10,
-                yearsSimulation: currentInputs.yearsSimulation ? Number(currentInputs.yearsSimulation.value) : 20,
+                yearsSimulation: currentInputs.yearsSimulation ? Number(currentInputs.yearsSimulation.value) : 30,
                 initialAge: currentInputs.initialAge ? Number(currentInputs.initialAge.value) : 30,
                 monthlyContributionPeriods: monthlyContributionPeriods,
                 goals: goals,
@@ -1723,6 +1746,8 @@
         renderEvents();
         renderExtraordinaryContributions();
         handleInput();
+        updateLabels();
+        updateStatsDescription();
 
         // Make control sections collapsible
         const makeCollapsible = () => {
