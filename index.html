@@ -653,7 +653,7 @@
         // Priority: URL params > localStorage > defaults
         const urlSettings = loadFromURL();
         const savedSettings = loadSettings();
-        const initialSettings = { ...defaults, ...(urlSettings ? {} : savedSettings), ...(urlSettings || {}) };
+        const initialSettings = { ...defaults, ...savedSettings, ...(urlSettings || {}) };
 
         const formatCurrency = (value) =>
             new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
@@ -933,8 +933,6 @@
             }, 0);
         };
 
-        applySettings(initialSettings);
-
         const simulate = ({
             initialInvestment,
             annualPercentage,
@@ -952,6 +950,7 @@
             const contributionLine = [];
             let cumulativeContributions = initialInvestment;
             let hasInvalidWithdrawal = false;
+            let totalWithdrawals = 0;
 
             // Convert events to year ranges map
             const eventsByYear = {};
@@ -1011,6 +1010,7 @@
                 let invalidWithdrawal = false;
                 if (month % 12 === 0 && eventsByYear[flooredYear]) {
                     const withdrawalAmount = eventsByYear[flooredYear];
+                    totalWithdrawals += withdrawalAmount;
                     if (withdrawalAmount > balance) {
                         hasInvalidWithdrawal = true;
                         invalidWithdrawal = true;
@@ -1051,7 +1051,7 @@
             const totalContributions = cumulativeContributions;
             const totalInterest = finalBalance - totalContributions;
 
-            return { data, contributionLine, finalBalance, totalContributions, totalInterest, hasInvalidWithdrawal };
+            return { data, contributionLine, finalBalance, totalContributions, totalInterest, hasInvalidWithdrawal, totalWithdrawals };
         };
 
         const updateLabels = () => {
@@ -1124,6 +1124,9 @@
             const optimisticBalance = stats.optimisticBalance.textContent;
             const pessimisticGain = stats.pessimisticGain.textContent;
             const optimisticGain = stats.optimisticGain.textContent;
+            
+            // Get total withdrawals from latest simulation (using pessimisticSim as reference)
+            const totalWithdrawals = window.pessimisticSimResult?.totalWithdrawals || 0;
 
             let description = `Comenzaste con <strong style="color: #6c8bff; font-size: 1.1em;">${formatCurrency(initialInv)}</strong> de capital inicial. `;
 
@@ -1185,7 +1188,8 @@
             // Final results with detailed rates
             description += `<br><br>📊 <strong>Rendimientos aplicados:</strong> Tu inversión creció con dos escenarios: un rendimiento <strong style="color: #ff6e95;">${pessimisticRate}% anual</strong> (escenario pesimista/conservador) y un rendimiento <strong style="color: #6cff8b;">${optimisticRate}% anual</strong> (escenario optimista). Estos porcentajes se componen mensualmente, maximizando el efecto del interés compuesto sobre tus aportes regulares.`;
             
-            description += `<br><br>💰 <strong>Resultado final:</strong> Con un total aportado de <strong style="color: #ffb86c; font-size: 1.15em;">${totalContributed}</strong>, alcanzarías entre <strong style="color: #ff6e95; font-size: 1.15em;">${pessimisticBalance}</strong> (pesimista, ganancia de <strong style="color: #ff6e95;">${pessimisticGain}</strong>) y <strong style="color: #6cff8b; font-size: 1.15em;">${optimisticBalance}</strong> (optimista, ganancia de <strong style="color: #6cff8b;">${optimisticGain}</strong>).`;
+            const withdrawalsText = totalWithdrawals > 0 ? ` (total retirado: <strong style="color: #ff6e95;">${formatCurrency(totalWithdrawals)}</strong>)` : '';
+            description += `<br><br>💰 <strong>Resultado final:</strong> Con un total aportado de <strong style="color: #ffb86c; font-size: 1.15em;">${totalContributed}</strong>${withdrawalsText}, alcanzarías entre <strong style="color: #ff6e95; font-size: 1.15em;">${pessimisticBalance}</strong> (pesimista, ganancia de <strong style="color: #ff6e95;">${pessimisticGain}</strong>) y <strong style="color: #6cff8b; font-size: 1.15em;">${optimisticBalance}</strong> (optimista, ganancia de <strong style="color: #6cff8b;">${optimisticGain}</strong>).`;
 
             descElement.innerHTML = description;
         };
@@ -1225,6 +1229,8 @@
             latestSimulation = optimisticSim;
             window.pessimisticSimData = pessimisticSim.data;
             window.optimisticSimData = optimisticSim.data;
+            window.pessimisticSimResult = pessimisticSim;
+            window.optimisticSimResult = optimisticSim;
             
             chart.data.labels = pessimisticSim.data.map((row) => row.yearLabel);
             chart.data.datasets[0].data = pessimisticSim.data.map((row) => row.balance);
@@ -1248,9 +1254,11 @@
             const optimisticPercent = ((optimisticDiff / optimisticSim.totalContributions) * 100).toFixed(1);
 
             stats.pessimisticBalance.textContent = formatCurrency(pessimisticSim.finalBalance);
-            stats.pessimisticGain.textContent = `+${formatCurrency(pessimisticDiff)} (+${pessimisticPercent}%)`;
+            const pessimisticSign = pessimisticDiff >= 0 ? '+' : '';
+            stats.pessimisticGain.textContent = `${pessimisticSign}${formatCurrency(pessimisticDiff)} (${pessimisticSign}${pessimisticPercent}%)`;
             stats.optimisticBalance.textContent = formatCurrency(optimisticSim.finalBalance);
-            stats.optimisticGain.textContent = `+${formatCurrency(optimisticDiff)} (+${optimisticPercent}%)`;
+            const optimisticSign = optimisticDiff >= 0 ? '+' : '';
+            stats.optimisticGain.textContent = `${optimisticSign}${formatCurrency(optimisticDiff)} (${optimisticSign}${optimisticPercent}%)`;
             stats.totalContributions.textContent = formatCurrency(pessimisticSim.totalContributions);
             
             // Calculate years to goal and age at goal for EACH goal
@@ -1338,6 +1346,7 @@
             const rangeField = inputs[key];
             rangeField.addEventListener('input', () => {
                 numberField.value = rangeField.value;
+                handleInput();
             });
             numberField.addEventListener('input', () => {
                 const min = Number(rangeField.min);
@@ -1357,6 +1366,7 @@
             const rangeField = inputs[key];
             rangeField.addEventListener('input', () => {
                 numberField.value = rangeField.value;
+                handleInput();
             });
             numberField.addEventListener('input', () => {
                 const current = Number(numberField.value);
@@ -1366,7 +1376,8 @@
             });
         });
 
-        Object.values(inputs).forEach((input) => input.addEventListener('input', handleInput));
+        // Add listener to initialAge input
+        inputs.initialAge.addEventListener('input', handleInput);
 
         // Monthly contribution periods management
         let editingPeriodIndex = -1;
@@ -1782,9 +1793,8 @@
         renderPauseYears();
         renderEvents();
         renderExtraordinaryContributions();
-        handleInput();
-        updateLabels();
-        updateStatsDescription();
+        // DON'T call handleInput() here - it will save default HTML values to localStorage
+        // We'll call it after applying the correct settings
 
         // Make control sections collapsible
         const makeCollapsible = () => {
@@ -1930,14 +1940,62 @@
         makeCollapsible();
         reattachEventListeners();
         
+        // Apply settings AFTER DOM reconstruction
+        setTimeout(() => {
+            // Get fresh references after makeCollapsible
+            const freshInputs = {
+                initialInvestment: document.getElementById('initialInvestment'),
+                annualPercentagePessimistic: document.getElementById('annualPercentagePessimistic'),
+                annualPercentageOptimistic: document.getElementById('annualPercentageOptimistic'),
+                yearsSimulation: document.getElementById('yearsSimulation'),
+                initialAge: document.getElementById('initialAge'),
+            };
+            
+            const freshFreeInputs = {
+                initialInvestment: document.getElementById('initialInvestmentNumber'),
+                annualPercentagePessimistic: document.getElementById('annualPercentagePessimisticNumber'),
+                annualPercentageOptimistic: document.getElementById('annualPercentageOptimisticNumber'),
+            };
+            
+            const freshNumberInputs = {
+                yearsSimulation: document.getElementById('yearsSimulationNumber'),
+            };
+            
+            // Apply values
+            freshInputs.initialInvestment.value = initialSettings.initialInvestment;
+            freshFreeInputs.initialInvestment.value = initialSettings.initialInvestment;
+            freshInputs.annualPercentagePessimistic.value = initialSettings.annualPercentagePessimistic;
+            freshFreeInputs.annualPercentagePessimistic.value = initialSettings.annualPercentagePessimistic;
+            freshInputs.annualPercentageOptimistic.value = initialSettings.annualPercentageOptimistic;
+            freshFreeInputs.annualPercentageOptimistic.value = initialSettings.annualPercentageOptimistic;
+            freshInputs.yearsSimulation.value = initialSettings.yearsSimulation;
+            freshNumberInputs.yearsSimulation.value = initialSettings.yearsSimulation;
+            freshInputs.initialAge.value = initialSettings.initialAge;
+            
+            // Update labels and view
+            updateLabels();
+            updateStatsDescription();
+            updateView();
+            
+            // Save to localStorage (overwrite if coming from URL)
+            persistSettings();
+        }, 50);
+        
         // Share button functionality
         document.getElementById('shareBtn').addEventListener('click', () => {
+            // Get fresh references to all inputs
+            const initialInvInput = document.getElementById('initialInvestmentNumber');
+            const pessimisticInput = document.getElementById('annualPercentagePessimisticNumber');
+            const optimisticInput = document.getElementById('annualPercentageOptimisticNumber');
+            const yearsInput = document.getElementById('yearsSimulation');
+            const ageInput = document.getElementById('initialAge');
+            
             const currentSettings = {
-                initialInvestment: Number(document.getElementById('initialInvestmentNumber').value),
-                annualPercentagePessimistic: Number(document.getElementById('annualPercentagePessimisticNumber').value),
-                annualPercentageOptimistic: Number(document.getElementById('annualPercentageOptimisticNumber').value),
-                yearsSimulation: Number(document.getElementById('yearsSimulation').value),
-                initialAge: Number(document.getElementById('initialAge').value),
+                initialInvestment: initialInvInput ? Number(initialInvInput.value) : 10000,
+                annualPercentagePessimistic: pessimisticInput ? Number(pessimisticInput.value) : 8,
+                annualPercentageOptimistic: optimisticInput ? Number(optimisticInput.value) : 10,
+                yearsSimulation: yearsInput ? Number(yearsInput.value) : 30,
+                initialAge: ageInput ? Number(ageInput.value) : 30,
                 monthlyContributionPeriods: monthlyContributionPeriods,
                 goals: goals,
                 events: discreteEvents,
@@ -1945,6 +2003,7 @@
                 extraordinaryContributions: extraordinaryContributions,
             };
             
+            console.log('Sharing settings:', currentSettings); // Debug
             const shareURL = generateShareURL(currentSettings);
             
             navigator.clipboard.writeText(shareURL).then(() => {
