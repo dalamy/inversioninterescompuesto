@@ -249,6 +249,12 @@
                         <strong>💡 Tip Pro:</strong> Juega con los valores para ver cómo pequeños cambios en el rendimiento o en tus aportes mensuales 
                         pueden generar diferencias <em>enormes</em> en el largo plazo. ¡Ese es el verdadero poder del tiempo y la constancia!
                     </p>
+                    <button id="shareBtn" style="margin-top: 16px; width: 100%; padding: 12px; background: #6c8bff; color: white; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;" 
+                        onmouseover="this.style.background='#5a7aee'" onmouseout="this.style.background='#6c8bff'">
+                        🔗 Copiar link para compartir
+                    </button>
+                    <p id="shareFeedback" style="margin-top: 8px; text-align: center; color: #6cff8b; font-size: 0.9em; opacity: 0; transition: opacity 0.3s;">✓ Link copiado al portapapeles</p>
+                    </p>
                 </div>
             </details>
         </section>
@@ -605,6 +611,35 @@
             extraordinaryContributions: [],
         };
 
+        // Load settings from URL query params (highest priority)
+        const loadFromURL = () => {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (!params.has('data')) return null;
+                
+                const compressed = params.get('data');
+                const decompressed = atob(compressed);
+                return JSON.parse(decompressed);
+            } catch (error) {
+                console.warn('Failed to parse URL parameters', error);
+                return null;
+            }
+        };
+
+        // Generate shareable URL with current settings
+        const generateShareURL = (settings) => {
+            try {
+                const json = JSON.stringify(settings);
+                const compressed = btoa(json);
+                const url = new URL(window.location.href.split('?')[0]);
+                url.searchParams.set('data', compressed);
+                return url.toString();
+            } catch (error) {
+                console.error('Failed to generate share URL', error);
+                return window.location.href;
+            }
+        };
+
         const loadSettings = () => {
             try {
                 const payload = localStorage.getItem(STORAGE_KEY);
@@ -615,8 +650,10 @@
             }
         };
 
+        // Priority: URL params > localStorage > defaults
+        const urlSettings = loadFromURL();
         const savedSettings = loadSettings();
-        const initialSettings = { ...defaults, ...savedSettings };
+        const initialSettings = { ...defaults, ...(urlSettings ? {} : savedSettings), ...(urlSettings || {}) };
 
         const formatCurrency = (value) =>
             new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
@@ -1892,6 +1929,35 @@
 
         makeCollapsible();
         reattachEventListeners();
+        
+        // Share button functionality
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const currentSettings = {
+                initialInvestment: Number(document.getElementById('initialInvestmentNumber').value),
+                annualPercentagePessimistic: Number(document.getElementById('annualPercentagePessimisticNumber').value),
+                annualPercentageOptimistic: Number(document.getElementById('annualPercentageOptimisticNumber').value),
+                yearsSimulation: Number(document.getElementById('yearsSimulation').value),
+                initialAge: Number(document.getElementById('initialAge').value),
+                monthlyContributionPeriods: monthlyContributionPeriods,
+                goals: goals,
+                events: discreteEvents,
+                pauseYears: pauseYears,
+                extraordinaryContributions: extraordinaryContributions,
+            };
+            
+            const shareURL = generateShareURL(currentSettings);
+            
+            navigator.clipboard.writeText(shareURL).then(() => {
+                const feedback = document.getElementById('shareFeedback');
+                feedback.style.opacity = '1';
+                setTimeout(() => {
+                    feedback.style.opacity = '0';
+                }, 3000);
+            }).catch(err => {
+                console.error('Failed to copy to clipboard', err);
+                alert('Link generado: ' + shareURL);
+            });
+        });
     </script>
 </body>
 </html>
