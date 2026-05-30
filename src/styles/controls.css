@@ -1,0 +1,124 @@
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.control {
+    display: grid;
+    gap: 8px;
+}
+
+.control label {
+    font-size: 0.95rem;
+    color: rgba(244, 246, 251, 0.8);
+}
+
+.control input[type='range'] {
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #5f81ff, #9c6bff);
+    outline: none;
+}
+
+.control input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.control input[type='number'] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: rgba(8, 12, 20, 0.9);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.control .input-row {
+    display: grid;
+    grid-template-columns: 1fr minmax(120px, 180px);
+    gap: 14px;
+    align-items: center;
+}
+
+.control .value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: rgba(244, 246, 251, 0.9);
+}
+
+.manager-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    border-left: 3px solid #ffa500;
+    gap: 12px;
+}
+
+.manager-row-period {
+    border-left-color: #9c6bff;
+}
+
+.manager-row-pause {
+    border-left-color: #6c8bff;
+}
+
+.manager-row-event {
+    border-left-color: #ff6e95;
+}
+
+.manager-row-contribution {
+    border-left-color: #6cff8b;
+}
+
+.manager-title {
+    color: #d8e1ff;
+    font-weight: 600;
+}
+
+.manager-meta {
+    color: #a0aac7;
+    margin-left: 12px;
+}
+
+.edit-btn {
+    background: rgba(108, 139, 255, 0.2);
+    color: #6c8bff;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-right: 6px;
+    transition: all 0.2s;
+}
+
+.edit-btn:hover {
+    background: rgba(108, 139, 255, 0.3);
+}
+
+.remove-btn {
+    background: rgba(255, 110, 149, 0.2);
+    color: #ff6e95;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+}
